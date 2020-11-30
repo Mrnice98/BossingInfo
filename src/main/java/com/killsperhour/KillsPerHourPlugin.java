@@ -62,10 +62,10 @@ public class KillsPerHourPlugin extends Plugin
     private OverlayManager overlayManager;
 
     @Inject
-    private com.killsperhour.KillsPerHourOverlay overlay;
+    private KillsPerHourOverlay overlay;
 
     @Inject
-    private com.killsperhour.KillsPerHourConfig config;
+    private KillsPerHourConfig config;
 
     @Inject
     private ChatCommandManager chatCommandManager;

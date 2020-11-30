@@ -44,7 +44,7 @@ class KillsPerHourOverlay extends Overlay
     private final PanelComponent panelComponent = new PanelComponent();
 
     @Inject
-    private KillsPerHourOverlay(Client client, com.killsperhour.KillsPerHourConfig config, com.killsperhour.KillsPerHourPlugin killsPerHourPlugin)
+    private KillsPerHourOverlay(Client client, KillsPerHourConfig config, KillsPerHourPlugin killsPerHourPlugin)
     {
         setPosition(OverlayPosition.ABOVE_CHATBOX_RIGHT);
         this.client = client;
