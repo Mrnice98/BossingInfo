@@ -1086,8 +1086,7 @@ public class KillsPerHourPlugin extends Plugin
     }
 
 
-    //ends the session setting all values to null / zero or equivelant. im not sure why i cant call the sessionReset method here and then just change the other values
-    //but for some reason when i do that the bank/idel time calculates incorrectly
+    //ends the session
     public void sessionEnd()
     {
         //Displays end of session stats in chat
