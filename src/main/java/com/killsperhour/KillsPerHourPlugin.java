@@ -530,29 +530,6 @@ public class KillsPerHourPlugin extends Plugin
         }
 
 
-
-        if(message.contains("Test"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Test";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Test";
-            sessionChecker();
-        }
-
-
-
         //Sarachnis IDENTIFIER
         if(message.contains("Your Sarachnis kill count is:"))
         {
