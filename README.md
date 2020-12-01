@@ -8,7 +8,11 @@ The plugin categorizes bosses into two categories, bosses who display messages i
 For bosses who DO NOT display kill times in chat the plugin will always account for banking and currently there is no way to not have idle time accounted for.
 
 Chat Commands:
+
 !info- This will output your current (or previous if no current session) sessions info into the chatbox.
+
 !end- This will end your session
+
 !pause- This will pause your session
+
 !resume- This will resume your session
