@@ -33,8 +33,11 @@ KPH Calc-
 allows you to select the way in which your kills per hour is calculated.
 
   Precise = the exact KPH to one decimal place
+  
   Rounded = KPH rounded to the nearest whole number
+  
   Round up = KPH always rounded up to the next whole number
+  
   Traditional = Integer division (Rounded down)
 
 Dagannoth Selector- 
