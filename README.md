@@ -13,17 +13,13 @@ Chat Commands:
 
 Config Options:
 
-
 Account for Banking- 
-
 If enabled the plugin will account for banking / idle time when doing its calculations (changing this option will end your session upon the next kill)
 
 Output Info- 
-
 If enabled when your session ends or switches the plugin will output a chat message to your chatbox with your last sessions information.
 
 Session Timeout- 
-
 The amount of time in minutes you want your session to stay valid for after your last kill. The timer resets each kill and setting the timeout to 0 will disable it all together.
 
 KPH Calc- 
@@ -35,10 +31,9 @@ allows you to select the way in which your kills per hour is calculated.
   Traditional = Integer division (Rounded down)
 
 Dagannoth Selector- 
-
 Allows you to choose which DK you want the plugin to track (Kings tracks all three) 
 
-
+Description of how the plugin works:
 
 The plugin works based off chat messages. It knows you got a kill by tracking each time the player receives a “Your kill count is” message in the chat. The plugin then keeps track of the number of times you receive that message during your session. The plugin then computes your average kill time by dividing your total session time by the number of kills that session (this means that your average kill time includes banking / downtime). The plugin then takes the average kill time in seconds and divides 3600(1 Hour) by that time giving the kills per hour, these calculations are updated upon each kill. 
 
