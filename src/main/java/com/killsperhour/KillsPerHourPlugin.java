@@ -52,7 +52,7 @@ import java.util.Arrays;
 
 
 @PluginDescriptor(
-        name = "kph-tracker",
+        name = "KPH Tracker",
         description = "Shows various things like Kills per hour for the boss you are killing",
         tags = {"PVM", "kills per hour"}
 )
