@@ -1,6 +1,7 @@
 # KPH Tracker
 A simple plugin which tracks your kills per hour at various bossess.
 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 Chat Commands:
@@ -14,6 +15,7 @@ Chat Commands:
 !resume- This will resume your session
 
 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 Config Options:
@@ -38,6 +40,8 @@ allows you to select the way in which your kills per hour is calculated.
 Dagannoth Selector- 
 Allows you to choose which DK you want the plugin to track (Kings tracks all three) 
 
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
