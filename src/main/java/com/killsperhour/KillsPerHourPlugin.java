@@ -1420,6 +1420,11 @@ public class KillsPerHourPlugin extends Plugin
             return hours + ":" + minutes + ":" + seconds;
 
         }
+        if(time < 60)
+        {
+            seconds = String.format("%02d",time);
+            minutes = "00";
+        }
         else
         {
             minutes = String.format("%02d",time / 60);
