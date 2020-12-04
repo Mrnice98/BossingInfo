@@ -1,7 +1,14 @@
 # KPH Tracker
-A simple plugin which tracks your kills per hour at various bossess.
+A simple plugin which tracks your kills per hour at various bossess.  
 
-This plugin is in its first iteration and I plan to improve it over the coming weeks, if you have any suggestions or issues feel free to message me on Discord MrNice98#7468 or leave a comment on the github.
+Please note this plugin is in its first iteration :small_blue_diamond: (Beta) and there is likely to be a bug here and there as its difficult to test all scenarios on every boss. **PLEASE** let me know if you find any bugs, it will be very much appreciated!   
+
+I have a number of features I plan on adding and over the coming weeks including improved support and calculation methods for non-time displaying bosses.  If there is anything you think would be a good addition to the plugin feel free to join the discord and send me a message.  
+
+#### Support:  
+The best way to get support, report an issue or give a suggestion is to join the [Discord](https://discord.gg/ATXSsbbXQV)!  
+Alternatively feel free to leave a comment or open an issue on GitHub
+
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
