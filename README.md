@@ -5,7 +5,7 @@ This plugin is in its first iteration and I plan to improve it over the coming w
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-**__Supported Bosses:__**                                                                                                                                                                                                                                                                                                   
+# **__Supported Bosses:__**                                                                                                                                                                                                                                                                                                   
  Currently the plugin has full support for the following bosses:
 
   `Zulrah`   `Vorkath`   `Nightmare`   `Theater of Blood`   `Chambers of Xeric & CM`   `Alchemical Hydra`   `Grotesque Guardians`   `The Gauntlet & C`   `TzTok-Jad`    
