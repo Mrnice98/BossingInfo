@@ -13,6 +13,7 @@ This plugin is in its first iteration and I plan to improve it over the coming w
 > Currently The plugin has partial support for: 
 
 > `Kraken`   `Thermonuclear smoke devil`  `Cerberus`   `Abyssal Sire`   `Chaos Fanatic`   `Crazy archaeologist`   `Scorpia`   `King Black Dragon`  `Chaos Elemental`   `Vet'ion`   `Venenatis`   `Callisto`   `Barrows`   `Giant Mole`   `Dagannoth Kings`   `Sarachnis`   `Kalphite Queen`   `Kree'arra`   `Commander Zilyana`   `General Graardor`   `K'ril Tsutsaroth`   `Corporeal Beast` 
+
 >  **meaning bank/idle time tracking and non idle time adjusted kph is not currently possible, everything else works fine.*
 > 
 > Currently The plugin does not have support for:
