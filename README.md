@@ -7,13 +7,16 @@ This plugin is in its first iteration and I plan to improve it over the coming w
 
 **__Supported Bosses:__**                                                                                                                                                                                                                                                                                                   
 > Currently the plugin has full support for the following bosses:
+
 >  `Zulrah`   `Vorkath`   `Nightmare`   `Theater of Blood`   `Chambers of Xeric & CM`   `Alchemical Hydra`   `Grotesque Guardians`   `The Gauntlet & C`   `TzTok-Jad`    
 > 
 > Currently The plugin has partial support for: 
+
 > `Kraken`   `Thermonuclear smoke devil`  `Cerberus`   `Abyssal Sire`   `Chaos Fanatic`   `Crazy archaeologist`   `Scorpia`   `King Black Dragon`  `Chaos Elemental`   `Vet'ion`   `Venenatis`   `Callisto`   `Barrows`   `Giant Mole`   `Dagannoth Kings`   `Sarachnis`   `Kalphite Queen`   `Kree'arra`   `Commander Zilyana`   `General Graardor`   `K'ril Tsutsaroth`   `Corporeal Beast` 
 >  **meaning bank/idle time tracking and non idle time adjusted kph is not currently possible, everything else works fine.*
 > 
 > Currently The plugin does not have support for:
+
 > `Wintertodt`   `Zalcano`   `Penance Queen`
 
 
