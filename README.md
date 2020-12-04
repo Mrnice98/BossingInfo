@@ -18,43 +18,38 @@ This plugin is in its first iteration and I plan to improve it over the coming w
  
  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Chat Commands:
+### Chat Commands:
 
-!info- This will output your current (or previous if no current session) sessions info into the chatbox.
-
-!end- This will end your session
-
-!pause- This will pause your session
-
+!info- This will output your current (or previous if no current session) sessions info into the chatbox.  
+!end- This will end your session  
+!pause- This will pause your session  
 !resume- This will resume your session
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-Config Options:
+### Config Options:
 
-Account for Banking- 
+Account for Banking-   
 If enabled the plugin will account for banking / idle time when doing its calculations (changing this option will end your session upon the next kill)
 
-Output Info- 
+Output Info-   
 If enabled when your session ends or switches the plugin will output a chat message to your chatbox with your last sessions information.
 
-Session Timeout- 
+Session Timeout-   
 The amount of time in minutes you want your session to stay valid for after your last kill. The timer resets each kill and setting the timeout to 0 will disable it all together.
 
-KPH Calc- 
-allows you to select the way in which your kills per hour is calculated.
+KPH Calc-   
+allows you to select the way in which your kills per hour is calculated.  
 
-  Precise = the exact KPH to one decimal place
-  
-  Rounded = KPH rounded to the nearest whole number
-  
-  Round up = KPH always rounded up to the next whole number
-  
-  Traditional = Integer division (Rounded down)
+     • Precise = the exact KPH to one decimal place
+     • Rounded = KPH rounded to the nearest whole number
+     • Round up = KPH always rounded up to the next whole number  
+     • Traditional = Integer division (Rounded down)
 
-Dagannoth Selector- 
+
+Dagannoth Selector-   
 Allows you to choose which DK you want the plugin to track (Kings tracks all three) 
 
 
