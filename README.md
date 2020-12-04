@@ -19,7 +19,8 @@ This plugin is in its first iteration and I plan to improve it over the coming w
  Currently The plugin does not have support for:
 
  `Wintertodt`   `Zalcano`   `Penance Queen`
-
+ 
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Chat Commands:
 
