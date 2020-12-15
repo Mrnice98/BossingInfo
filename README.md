@@ -18,7 +18,9 @@ Alternatively feel free to leave a comment or open an issue on GitHub
   
 - Currently The plugin has partial support for:  
   `Kraken`  `Abyssal Sire`  `Vet'ion`  `Barrows`  
-     **These bosses use uniqe mechanics which could lead to innaccurate idle time & exact kill times. please report any issues*
+     **These bosses use uniqe mechanics which could lead to innaccurate idle time & exact kill times. please report any issues*  
+     **all four of these bosses are being looked into and should shortly be added to "full support"*
+  
   
   
 - Currently The plugin does not have support for:  
