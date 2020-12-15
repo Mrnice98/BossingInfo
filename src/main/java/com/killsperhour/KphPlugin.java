@@ -7,7 +7,6 @@
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
@@ -26,29 +25,34 @@
 package com.killsperhour;
 
 import com.google.inject.Provides;
-import net.runelite.api.ChatMessageType;
-import net.runelite.api.Client;
-import net.runelite.api.GameState;
-import net.runelite.api.Player;
+import net.runelite.api.*;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.HitsplatApplied;
 import net.runelite.client.chat.ChatCommandManager;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.ClientToolbar;
+import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
+import net.runelite.client.util.ImageUtil;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import javax.inject.Inject;
+import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 
 @PluginDescriptor(
@@ -56,16 +60,22 @@ import java.util.Arrays;
         description = "Shows various things like Kills per hour for the boss you are killing",
         tags = {"PVM", "kills per hour"}
 )
-public class KillsPerHourPlugin extends Plugin
+public class KphPlugin extends Plugin
 {
     @Inject
     private OverlayManager overlayManager;
 
     @Inject
-    private KillsPerHourOverlay overlay;
+    private ItemManager itemManager;
 
     @Inject
-    private KillsPerHourConfig config;
+    private InfoBoxManager infoBoxManager;
+
+    @Inject
+    private KphOverlay overlay;
+
+    @Inject
+    private KphConfig config;
 
     @Inject
     private ChatCommandManager chatCommandManager;
@@ -76,41 +86,79 @@ public class KillsPerHourPlugin extends Plugin
     @Inject
     private Client client;
 
+    @Inject
+    private KphBossInfo kphBossInfo;
 
-    private Instant secondKillTime;
+    @Inject
+    private KphSpecialMethods sMethods;
+
+    @Inject
+    private ClientToolbar clientToolbar;
+
+    private KphPanel panel;
+
+    private KphInfobox infobox;
+
+
     private Instant startTime;
     private Instant totalSessionStart = Instant.now();
     private Instant timeoutStart;
     private Instant pauseStart;
+    private Instant killTimerStart;
 
-    private String message;
-    private String sessionNpc;
-    private final String supremeMessage = "Your Dagannoth Supreme kill count is:";
-    private final String rexMessage = "Your Dagannoth Rex kill count is:";
-    private final String primeMessage = "Your Dagannoth Prime kill count is:";
+
+    final String supremeMessage = "Your Dagannoth Supreme kill count is:";
+    final String rexMessage = "Your Dagannoth Rex kill count is:";
+    final String primeMessage = "Your Dagannoth Prime kill count is:";
 
     private int totalTime;
-    private int averageKillTime;
     private int delayTicks;
     private int timerOffset;
-    private int bankingOffset;
     private int totalBossKillTime;
     private int pauseTime;
+    private int totalKillTime;
+    private int firstKillTime;
+    private int attkCount;
     private final int[] cmRegions = {13138, 13137, 13139, 13141, 13136, 13145, 13393, 13394, 13140, 13395, 13397};
     private final int[] regGauntletRegion = {7512};
     private final int[] cGauntletRegion = {7768};
     private final int[] gargBossRegion = {6727};
 
-    private boolean sessionHasBeenPaused;
     private boolean configState;
-    private boolean cacheHasInfo;
+    boolean cacheHasInfo;
 
+    private NPC lastAttackedBoss;
+    private NPC currentNPC;
+
+    NPC lastValidBoss;
+
+    String message;
+    String sessionNpc;
     String currentBoss;
+
+    Instant primeStart;
+    Instant rexStart;
+    Instant supremeStart;
+
     double killsPerHour;
+    int averageKillTime;
     int killsThisSession;
     int totalSessionTime;
-    int timeSpentBanking;
+    int timeSpentIdle;
+    int primeAttkTimout = 21;
+    int rexAttkTimout = 21;
+    int supremeAttkTimout = 21;
+
     boolean paused;
+
+    Map<String, Integer> bossIcon = new HashMap<String, Integer>();
+    ArrayList<String> noDisplayBosses = new ArrayList<String>();
+    ArrayList<String> displayBosses = new ArrayList<String>();
+
+
+
+
+    //need to make a way to reset the first kill time if the boss is not hit within 10-15sec or something, with an exception for corp and sire.
 
 
 
@@ -119,12 +167,47 @@ public class KillsPerHourPlugin extends Plugin
 //######################################################################################################################################################
 
 
+    //Does what it says
+    @Subscribe
+    public void onConfigChanged(ConfigChanged configChanged)
+    {
+        if(configChanged.getKey().equals("KPH Calc Method"))
+        {
+            panel.updateKphMethod();
+        }
+
+        if(configChanged.getKey().equals("Dagannoth Selector"))
+        {
+            if(sessionNpc != null)
+            {
+                if(sessionNpc.equals("Dagannoth Kings") || sessionNpc.equals("Dagannoth Prime") || sessionNpc.equals("Dagannoth Supreme") || sessionNpc.equals("Dagannoth Rex"))
+                {
+                    sessionEnd();
+                }
+            }
+        }
+
+        if(configChanged.getKey().equals("Display Infobox"))
+        {
+            if(config.renderInfobox())
+            {
+                addInfoBox();
+            }
+            else
+            {
+                infoBoxManager.removeInfoBox(infobox);
+            }
+        }
+        //can add a method where if the config option is changed for account for banking, update the total time accordingly so i dont need to reset the session
+    }
+
     //INTEGRITY MAINTAINER
     @Subscribe
     public void onGameStateChanged(GameStateChanged gameStateChanged)
     {
        if(gameStateChanged.getGameState() == GameState.HOPPING || gameStateChanged.getGameState() == GameState.LOGGING_IN)
        {
+           attkCount = 0;
            delayTicks = 0;
        }
        //this is to make sure garg boss times are gathered correctly
@@ -169,10 +252,879 @@ public class KillsPerHourPlugin extends Plugin
     }
 
 
+    //private final List<String> noDisplayBosses = Arrays.asList("Giant Mole", "the nightmare");
+    @Subscribe
+    public void onHitsplatApplied(HitsplatApplied hitsplatApplied)
+    {
+        if (!paused)
+        {
+            if (hitsplatApplied.getActor() instanceof NPC)
+            {
+                NPC npc = (NPC)hitsplatApplied.getActor();
+                if(hitsplatApplied.getHitsplat().isMine())
+                {
+                    lastAttackedBoss = npc;
+                    if(noDisplayBosses.contains(lastAttackedBoss.getName()))
+                    {
+                        lastValidBoss = lastAttackedBoss;
+                        //includes a param which resets their attk timeout if they are the one being hit
+                        sMethods.dagTimeClac();
+                        attkCount++;
+                        if (attkCount == 1)
+                        {
+                            currentNPC = lastValidBoss;
+                            setKillTimeStart();
+                        }
+
+                        if (currentNPC.getName() != null && lastValidBoss.getName() != null)
+                        {
+                            if(!currentNPC.getName().equals(lastValidBoss.getName()))
+                            {
+                                attkCount = 1;
+                                setKillTimeStart();
+                                currentNPC = lastValidBoss;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void setKillTimeStart()
+    {
+        if(sMethods.dagChecker())
+        {
+            killTimerStart = sMethods.dagTimeClac();
+        }
+        else
+        {
+            killTimerStart = Instant.now();
+        }
+    }
+
+
+    //resets the attkcount when the boss you are attking dies
+    int stoper;
+    public void bossKilled()
+    {
+        if(lastValidBoss != null)
+        {
+            if(lastValidBoss.isDead() && stoper == 0)
+            {
+                stoper = 1;
+                attkCount = 0;
+            }
+            if(!lastValidBoss.isDead() && stoper == 1)
+            {
+                stoper = 0;
+            }
+        }
+    }
+
+    //UPDATER / FETCHER
+    private int ticks;
+
+    @Subscribe
+    public void onGameTick(GameTick gameTick)
+    {
+        primeAttkTimout++;
+        rexAttkTimout++;
+        supremeAttkTimout++;
+
+        delayTicks++;
+        ticks++;
+        bossKilled();
+
+        if(lastValidBoss != null)
+        {
+            if(sMethods.dagChecker())
+            {
+                sMethods.dagTimeClear();
+            }
+        }
+
+      if(ticks == 2)
+      {
+          ticks = 0;
+          if(killsThisSession > 0 && !paused && config.timeoutTime() != 0)
+          {
+              sessionTimeoutTimer();
+          }
+      }
+
+    }
+
+
+
+
+
+
+//END SECTION
+//###############################################################################################################################################################
+
+
+
+//                                                                  INITIALIZERS / BUILDERS
+//##################################################################################################################################################################
+    public void addInfoBox()
+    {
+        if(config.renderInfobox() && sessionNpc != null)
+        {
+            infoBoxManager.removeInfoBox(infobox);
+            BufferedImage image = itemManager.getImage(bossIcon.get(sessionNpc));
+            infobox = new KphInfobox(image, this,config, OverlayPosition.DETACHED);
+            infoBoxManager.addInfoBox(infobox);
+        }
+
+    }
+
+    private void buildSidePanel()
+    {
+        this.panel = (KphPanel) this.injector.getInstance(KphPanel.class);
+        this.panel.sidePanelInitializer();
+        BufferedImage icon = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "icon.png");
+        NavigationButton navButton = NavigationButton.builder().tooltip("KPH Tracker").icon(icon).priority(10).panel(this.panel).build();
+        this.clientToolbar.addNavigation(navButton);
+    }
+
+
+//END SECTION
+//###############################################################################################################################################################
+
+
+
+
+//                               BOSS TIME KILL TIME IDENTIFIERS FOR BOSSES WHICH DISPLAY TIME
+//##################################################################################################################################################################
+
+    //gets the killtime of the last kill as displayed in the chat and if selected calls for the banking time to be calculated
+    public int bossKillTime()
+    {
+
+        //FIGHT DURATION CHAT IDENTIFIER, FOR BOSSESS WHO OUTPUT IN THAT FORMAT.
+        if(message.contains("Fight duration:"))
+        {
+            //the "Grotesque Guardians" is the only boss which outputs time before kill count and also uses fight duration
+            //therefore we want Fight duration to act normally if not kill GG's
+            if(sessionNpc.equals("Grotesque Guardians"))
+            {
+                displayFirstIncrementerAndInitializer();
+            }
+            return chatDisplayKillTimeGetter();
+        }
+
+        //Chambers identifier
+        // all bossess who output with duration before kc message need to follow same example as chambers
+        if(message.contains("Congratulations - your raid is complete!"))
+        {
+            message = message.substring(message.indexOf("Duration:</col>") + 15);
+            displayFirstIncrementerAndInitializer();
+            return chatDisplayKillTimeGetter();
+        }
+
+        if(message.contains("Corrupted challenge duration:"))
+        {
+            displayFirstIncrementerAndInitializer();
+            return chatDisplayKillTimeGetter();
+        }
+
+        if(message.contains("Challenge duration:"))
+        {
+            displayFirstIncrementerAndInitializer();
+            return chatDisplayKillTimeGetter();
+        }
+
+        if(message.contains("Theatre of Blood total completion time: "))
+        {
+            message = message.substring(message.indexOf("time: ") + 5);
+            displayFirstIncrementerAndInitializer();
+            return chatDisplayKillTimeGetter();
+        }
+
+        else
+            return 0;
+
+
+
+    }
+
+    //Increments the kill count for display first bosses and initializes the session if kills = 1. This is for bosses who display time first then KC.
+    public void displayFirstIncrementerAndInitializer()
+    {
+        killsThisSession++;
+        if(killsThisSession == 1)
+        {
+            sessionInitializer();
+        }
+    }
+
+
+
+
+//END OF SECTION
+//##########################################################################################################################################
+
+
+
+
+
+
+//                                               BELOW IS THE BOSS IDENTIFICATION SECTION
+//#########################################################################################################################################
+
+    //CHAT DISPLAY BOSSES LISTED BELOW
+    //keeps track of the kills done during the session and calls the session checker to make sure the session is still valid
+    public void bossKc()
+    {
+        //ZULRAH IDENTIFIER
+        if(message.contains("Your Zulrah kill count is:"))
+        {
+            updateSessionInfoCache();
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Zulrah"; //must make sure all boss identifiers set session npc before the sessioninitalizer
+                sessionInitializer();
+            }
+            currentBoss = "Zulrah";
+            sessionChecker();
+
+        }
+
+        //VORKATH IDENTIFER
+        if(message.contains("Your Vorkath kill count is:"))
+        {
+            updateSessionInfoCache();
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Vorkath";
+                sessionInitializer();
+            }
+            currentBoss = "Vorkath";
+            sessionChecker();
+
+        }
+
+        //HYDRA IDENTIFER
+        if(message.contains("Your Alchemical Hydra kill count is:"))
+        {
+            updateSessionInfoCache();
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+              sessionNpc = "Hydra";
+              sessionInitializer();
+            }
+            currentBoss = "Hydra";
+            sessionChecker();
+
+        }
+
+        //GARG IDENTIFER
+        if(message.contains("Your Grotesque Guardians kill count is:"))
+        {
+            updateSessionInfoCache();
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Grotesque Guardians";
+                sessionInitializer();
+            }
+            currentBoss = "Grotesque Guardians";
+            sessionChecker();
+
+        }
+
+
+        //CORRUPTED GAUNTLET IDENTIFER
+        if(message.contains("Your Corrupted Gauntlet completion count is:"))
+        {
+            updateSessionInfoCache();
+            if(killsThisSession == 1)
+            {
+              sessionNpc =  "Corrupted Gauntlet";
+              sessionInitializer();
+            }
+            currentBoss = "Corrupted Gauntlet";
+            sessionChecker();
+
+        }
+
+        //GAUNTLET IDENTIFER
+        if(message.contains("Your Gauntlet completion count is:"))
+        {
+            updateSessionInfoCache();
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Gauntlet";
+                sessionInitializer();
+            }
+            currentBoss = "Gauntlet";
+            sessionChecker();
+
+        }
+
+        //NIGHTMARE IDENTIFER
+        if(message.contains("Your Nightmare kill count is:"))
+        {
+            updateSessionInfoCache();
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Nightmare";
+                sessionInitializer();
+            }
+            currentBoss = "Nightmare";
+            sessionChecker();
+
+        }
+
+        //both chambers dont have kills++ as it is added when time is displayed to allow for accurate calculation, the session inittlalizer has also been moved to same place
+        //CHAMBERS IDENTIFER
+        if(message.contains("Your completed Chambers of Xeric count is:"))
+        {
+            updateSessionInfoCache();
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Chambers";
+                sessionInitializer();
+            }
+            currentBoss = "Chambers";
+            sessionChecker();
+
+        }
+
+
+        //When doing a CM directly after a chambers that will cause a miss read
+        //CM CHAMBERS IDENTIFER
+        if(message.contains("Your completed Chambers of Xeric Challenge Mode count is:"))
+        {
+            updateSessionInfoCache();
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "CM Chambers";
+                sessionInitializer();
+            }
+            currentBoss = "CM Chambers";
+            sessionChecker();
+
+        }
+
+        //THEATER IDENTIFER
+        if(message.contains("Your completed Theatre of Blood count is:"))
+        {
+            updateSessionInfoCache();
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Theater";
+                sessionInitializer();
+            }
+            currentBoss = "Theater";
+            sessionChecker();
+
+        }
+
+        //JAD IDENTIFER
+        if(message.contains("Your TzTok-Jad kill count is:"))
+        {
+            updateSessionInfoCache();
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "TzTok-Jad";
+                sessionInitializer();
+            }
+            currentBoss = "TzTok-Jad";
+            sessionChecker();
+
+        }
+
+        //ZUK IDENTIFER
+        if(message.contains("Your TzKal-Zuk kill count is:"))
+        {
+            updateSessionInfoCache();
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "TzKal-Zuk";
+                sessionInitializer();
+            }
+            currentBoss = "TzKal-Zuk";
+            sessionChecker();
+
+        }
+
+
+
+
+
+//------------------------------------------------NON-DISPLAY BOSSES BELOW----------------------------------------------------------------------
+
+//Below are bosses which do not display a kill time, there time is calced purely from the timer and is handled in there if satement
+        //i can definately put this into a switch statement at some point or at very least i can make this code cleaner, by putting the majority of the body into a mehtod
+
+        //as i have it set up right now everything is working reletively well.
+
+        //GIANT MOLE IDENTIFIER --- edited with potental changes
+        if(message.contains("Your Giant Mole kill count is:"))
+        {
+            updateSessionInfoCache();
+            //prevKillNumber = killsThisSession;
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Giant Mole";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Giant Mole";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+
+        //Sarachnis IDENTIFIER
+        if(message.contains("Your Sarachnis kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Sarachnis";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Sarachnis";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+
+        //ABYSSAL SIRE BOSS IDENTIFIER
+        if(message.contains("Your Abyssal Sire kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Abyssal Sire";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Abyssal Sire";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Zilyana BOSS IDENTIFIER
+        if(message.contains("Your Commander Zilyana kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Zilyana";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Zilyana";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Bandos
+        if(message.contains("Your General Graardor kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "General Graardor";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "General Graardor";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Arma
+        if(message.contains("Your Kree'arra kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Kree'arra";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Kree'arra";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //KRIL / ZAMMY
+        if(message.contains("Your K'ril Tsutsaroth kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "K'ril Tsutsaroth";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "K'ril Tsutsaroth";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Kraken
+        if(message.contains("Your Kraken kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Kraken";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Kraken";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //THERMY
+        if(message.contains("Your Thermonuclear Smoke Devil kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Thermy";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Thermy";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //CERBERUS
+        if(message.contains("Your Cerberus kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Cerberus";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Cerberus";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //KING BLACK DRAGON
+        if(message.contains("Your King Black Dragon kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "King Black Dragon";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "King Black Dragon";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Scorpia
+        if(message.contains("Your Scorpia kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Scorpia";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Scorpia";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Chaos Fanatic
+        if(message.contains("Your Chaos Fanatic kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Chaos Fanatic";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Chaos Fanatic";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Crazy Archaeologist
+        if(message.contains("Your Crazy Archaeologist kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Crazy Archaeologist";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Crazy Archaeologist";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Chaos Elemental
+        if(message.contains("Your Chaos Elemental kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Chaos Elemental";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Chaos Elemental";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Vet'ion
+        if(message.contains("Your Vet'ion kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Vet'ion";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Vet'ion";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Venenatis
+        if(message.contains("Your Venenatis kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Venenatis";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Venenatis";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Barrows
+        if(message.contains("Your Barrows chest count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Barrows";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Barrows";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+
+        //Deranged Archaeologist
+        if(message.contains("Your Deranged Archaeologist kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Deranged Archaeologist";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Deranged Archaeologist";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Kalphite Queen
+        if(message.contains("Your Kalphite Queen kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Kalphite Queen";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Kalphite Queen";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+        //Corporeal Beast
+        if(message.contains("Your Corporeal Beast kill count is:"))
+        {
+            updateSessionInfoCache();
+
+            killsThisSession++;
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Corporeal Beast";
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+            }
+
+            currentBoss = "Corporeal Beast";
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+
+        //Daggonoth kings
+        if((message.contains(rexMessage) || message.contains(primeMessage) || message.contains(supremeMessage)) && config.dksSelector() == KphConfig.DksSelector.Kings
+        || (message.contains(rexMessage) && config.dksSelector() == KphConfig.DksSelector.Rex)
+        || (message.contains(primeMessage) && config.dksSelector() == KphConfig.DksSelector.Prime)
+        || (message.contains(supremeMessage) && config.dksSelector() == KphConfig.DksSelector.Supreme))
+        {
+            updateSessionInfoCache();
+            killsThisSession++;
+
+            if(killsThisSession == 1)
+            {
+                sessionNpc = "Dagannoth " + config.dksSelector().toString();
+                sessionInitializer();
+                firstKillTime = generalTimer(killTimerStart);
+
+                System.out.println("dag first kill " + firstKillTime);
+            }
+
+            currentBoss = "Dagannoth " + config.dksSelector().toString();
+
+            sMethods.dagTimeClear();
+
+            noDisplayKillTimeGetter();
+            sessionChecker();
+        }
+
+
+
+
+
+
+
+    }
+
+
+    //sets the values at a start of a new session
+    private void sessionInitializer()
+    {
+        totalSessionStart = Instant.now();
+        configState = getBankConfigState();
+        startTime = Instant.now();
+
+        if(sessionNpc != null)
+        {
+            addInfoBox();
+            panel.setBossIcon();
+        }
+
+    }
+
+
+//END OF SECTION
+//#############################################################################################################################################
+
+
+
+
+
+//                                                         SETTERS AND CHECKERS
+//##############################################################################################################################################
+
+
+    //checks to make sure the boss you are killing has not changed
+    public void sessionChecker()
+    {
+        timeoutStart = Instant.now();
+        //session changed
+        if (!sessionNpc.equals(currentBoss) || getBankConfigState() != configState)
+        {
+            sessionReset();
+        }
+    }
+
     //these are needed for bossess who output the time first in chat then there kc, without this times could get messed up when switching sessions
     public void integrityCheck()
     {
-
         //Guantlet check
         int[] currentRegions;
         if(message.contains("Time remaining:") && sessionNpc != null)
@@ -216,839 +1168,6 @@ public class KillsPerHourPlugin extends Plugin
     }
 
 
-
-    //UPDATER / FETCHER
-    private int ticks;
-
-    @Subscribe
-    public void onGameTick(GameTick gameTick)
-    {
-        delayTicks++;
-        ticks++;
-      if(ticks == 2)
-      {
-          ticks = 0;
-          if(killsThisSession > 0 && !paused && config.timeoutTime() != 0)
-          {
-              sessionTimeoutTimer();
-          }
-      }
-
-    }
-
-
-
-
-//END SECTION
-//###############################################################################################################################################################
-
-
-
-//                               BOSS TIME KILL TIME IDENTIFIERS FOR BOSSES WHICH DISPLAY TIME
-//##################################################################################################################################################################
-
-    //gets the killtime of the last kill as displayed in the chat and if selected calls for the banking time to be calculated
-    public int bossKillTime()
-    {
-
-        //FIGHT DURATION CHAT IDENTIFIER, FOR BOSSESS WHO OUTPUT IN THAT FORMAT.
-        if(message.contains("Fight duration:"))
-        {
-            //the "Grotesque Guardians" is the only boss which outputs time before kill count and also uses fight duration
-            //therefore we want Fight duration to act normally if not kill GG's
-            if(sessionNpc.equals("Grotesque Guardians"))
-            {
-                displayFirstIncrementerAndInitializer();
-            }
-            return chatDisplayKillTimeGetter();
-        }
-
-        //Chambers identifier
-        // all bossess who output with duration before kc message need to follow same example as chambers ***********
-        if(message.contains("Congratulations - your raid is complete!"))
-        {
-            message = message.substring(message.indexOf("Duration:</col>") + 15);
-            displayFirstIncrementerAndInitializer();
-            return chatDisplayKillTimeGetter();
-        }
-
-        if(message.contains("Corrupted challenge duration:"))
-        {
-            displayFirstIncrementerAndInitializer();
-            return chatDisplayKillTimeGetter();
-        }
-
-        if(message.contains("Challenge duration:"))
-        {
-            displayFirstIncrementerAndInitializer();
-            return chatDisplayKillTimeGetter();
-        }
-
-        if(message.contains("Theatre of Blood total completion time:"))
-        {
-            displayFirstIncrementerAndInitializer();
-            return chatDisplayKillTimeGetter();
-        }
-
-        else
-            return 0;
-
-
-
-    }
-
-    //Increments the kill count for display first bosses and initializes the session if kills = 1. This is for bosses who display time first then KC.
-    public void displayFirstIncrementerAndInitializer()
-    {
-        killsThisSession++;
-        if(killsThisSession == 1)
-        {
-            sessionInitializer();
-        }
-    }
-
-
-
-//END OF SECTION
-//##########################################################################################################################################
-
-
-
-
-
-
-//                                               BELOW IS THE BOSS IDENTIFICATION SECTION
-//#########################################################################################################################################
-
-    //CHAT DISPLAY BOSSES LISTED BELOW
-    //keeps track of the kills done during the session and calls the session checker to make sure the session is still valid
-    public void bossKc()
-    {
-        //ZULRAH IDENTIFIER
-        if(message.contains("Your Zulrah kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Zulrah";
-            }
-            currentBoss = "Zulrah";
-            sessionChecker();
-
-        }
-
-        //VORKATH IDENTIFER
-        if(message.contains("Your Vorkath kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Vorkath";
-            }
-            currentBoss = "Vorkath";
-            sessionChecker();
-
-        }
-
-        //HYDRA IDENTIFER
-        if(message.contains("Your Alchemical Hydra kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Hydra";
-            }
-            currentBoss = "Hydra";
-            sessionChecker();
-
-        }
-
-        //GARG IDENTIFER
-        if(message.contains("Your Grotesque Guardians kill count is:"))
-        {
-            updateSessionInfoCache();
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Grotesque Guardians";
-            }
-            currentBoss = "Grotesque Guardians";
-            sessionChecker();
-
-        }
-
-
-        //CORRUPTED GAUNTLET IDENTIFER
-        if(message.contains("Your Corrupted Gauntlet completion count is:"))
-        {
-            updateSessionInfoCache();
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Corrupted Gauntlet";
-            }
-            currentBoss = "Corrupted Gauntlet";
-            sessionChecker();
-
-        }
-
-        //GAUNTLET IDENTIFER
-        if(message.contains("Your Gauntlet completion count is:"))
-        {
-            updateSessionInfoCache();
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Gauntlet";
-            }
-            currentBoss = "Gauntlet";
-            sessionChecker();
-
-        }
-
-        //NIGHTMARE IDENTIFER
-        if(message.contains("Your Nightmare kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Nightmare";
-            }
-            currentBoss = "Nightmare";
-            sessionChecker();
-
-        }
-
-        //both chambers dont have kills++ as it is added when time is displayed to allow for accurate calculation, the session inittlalizer has also been moved to same place
-        //CHAMBERS IDENTIFER
-        if(message.contains("Your completed Chambers of Xeric count is:"))
-        {
-            updateSessionInfoCache();
-            if(killsThisSession == 1)
-            {
-                sessionNpc = "Chambers";
-            }
-            currentBoss = "Chambers";
-            sessionChecker();
-
-        }
-
-
-        //When doing a CM directly after a chambers that will cause a miss read
-        //CM CHAMBERS IDENTIFER
-        if(message.contains("Your completed Chambers of Xeric Challenge Mode count is:"))
-        {
-            updateSessionInfoCache();
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "CM Chambers";
-            }
-            currentBoss = "CM Chambers";
-            sessionChecker();
-
-        }
-
-        //THEATER IDENTIFER
-        if(message.contains("Your completed Theatre of Blood count is:"))
-        {
-            updateSessionInfoCache();
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Theater";
-            }
-            currentBoss = "Theater";
-            sessionChecker();
-
-        }
-
-        //JAD IDENTIFER
-        if(message.contains("Your TzTok-Jad kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "TzTok-Jad";
-            }
-            currentBoss = "TzTok-Jad";
-            sessionChecker();
-
-        }
-
-        //ZUK IDENTIFER
-        if(message.contains("Your TzKal-Zuk kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "TzKal-Zuk";
-            }
-            currentBoss = "TzKal-Zuk";
-            sessionChecker();
-
-        }
-
-
-
-//------------------------------------------------NON-DISPLAY BOSSES BELOW----------------------------------------------------------------------
-
-//Below are bosses which do not display a kill time, there time is calced purely from the timer and is handled in there if satement
-        //i can definately put this into a switch statement at some point or at very least i can make this code cleaner, by putting the majority of the body into a mehtod
-
-        //GIANT MOLE IDENTIFIER
-        if(message.contains("Your Giant Mole kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Giant Mole";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Giant Mole";
-            sessionChecker();
-        }
-
-
-        //Sarachnis IDENTIFIER
-        if(message.contains("Your Sarachnis kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Sarachnis";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Sarachnis";
-            sessionChecker();
-        }
-
-
-        //ABYSSAL SIRE BOSS IDENTIFIER
-        if(message.contains("Your Abyssal Sire kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Abyssal Sire";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Abyssal Sire";
-            sessionChecker();
-        }
-
-        //Zilyana BOSS IDENTIFIER
-        if(message.contains("Your Commander Zilyana kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Zilyana";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Zilyana";
-            sessionChecker();
-        }
-
-        //Bandos
-        if(message.contains("Your General Graardor kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "General Graardor";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "General Graardor";
-            sessionChecker();
-        }
-
-        //Arma
-        if(message.contains("Your Kree'arra kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Kree'arra";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Kree'arra";
-            sessionChecker();
-        }
-
-        //KRIL / ZAMMY
-        if(message.contains("Your K'ril Tsutsaroth kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "K'ril Tsutsaroth";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "K'ril Tsutsaroth";
-            sessionChecker();
-        }
-
-        //Kraken
-        if(message.contains("Your Kraken kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Kraken";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Kraken";
-            sessionChecker();
-        }
-
-        //THERMY
-        if(message.contains("Your Thermonuclear Smoke Devil kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Thermy";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Thermy";
-            sessionChecker();
-        }
-
-        //CERBERUS
-        if(message.contains("Your Cerberus kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Cerberus";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Cerberus";
-            sessionChecker();
-        }
-
-        //KING BLACK DRAGON
-        if(message.contains("Your King Black Dragon kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "King Black Dragon";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "King Black Dragon";
-            sessionChecker();
-        }
-
-        //Scorpia
-        if(message.contains("Your Scorpia kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Scorpia";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Scorpia";
-            sessionChecker();
-        }
-
-        //Chaos Fanatic
-        if(message.contains("Your Chaos Fanatic kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Chaos Fanatic";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Chaos Fanatic";
-            sessionChecker();
-        }
-
-        //Crazy Archaeologist
-        if(message.contains("Your Crazy Archaeologist kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Crazy Archaeologist";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Crazy Archaeologist";
-            sessionChecker();
-        }
-
-        //Chaos Elemental
-        if(message.contains("Your Chaos Elemental kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Chaos Elemental";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Chaos Elemental";
-            sessionChecker();
-        }
-
-        //Vet'ion
-        if(message.contains("Your Vet'ion kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Vet'ion";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Vet'ion";
-            sessionChecker();
-        }
-
-        //Venenatis
-        if(message.contains("Your Venenatis kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Venenatis";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Venenatis";
-            sessionChecker();
-        }
-
-        //Barrows
-        if(message.contains("Your Barrows chest count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Barrows";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Barrows";
-            sessionChecker();
-        }
-
-
-        //Deranged Archaeologist
-        if(message.contains("Your Deranged Archaeologist kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Deranged Archaeologist";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Deranged Archaeologist";
-            sessionChecker();
-        }
-
-        //Kalphite Queen
-        if(message.contains("Your Kalphite Queen kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Kalphite Queen";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Kalphite Queen";
-            sessionChecker();
-        }
-
-        //Corporeal Beast
-        if(message.contains("Your Corporeal Beast kill count is:"))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Corporeal Beast";
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Corporeal Beast";
-            sessionChecker();
-        }
-
-
-        //Daggonoth kings
-        if((message.contains(rexMessage) || message.contains(primeMessage) || message.contains(supremeMessage)) && config.dksSelector() == com.killsperhour.KillsPerHourConfig.DksSelector.Kings
-        || (message.contains(rexMessage) && config.dksSelector() == com.killsperhour.KillsPerHourConfig.DksSelector.Rex)
-        || (message.contains(primeMessage) && config.dksSelector() == com.killsperhour.KillsPerHourConfig.DksSelector.Prime)
-        || (message.contains(supremeMessage) && config.dksSelector() == com.killsperhour.KillsPerHourConfig.DksSelector.Supreme))
-        {
-            updateSessionInfoCache();
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionInitializer();
-                sessionNpc = "Dagannoth " + config.dksSelector();
-            }
-            if(killsThisSession == 2)
-            {
-                secondKillTime = Instant.now();
-                bankingOffset();
-            }
-            //handles kill times
-            totalTime = (sessionTimer() + bankingOffset) - pauseTime;
-            currentBoss = "Dagannoth " + config.dksSelector();
-            sessionChecker();
-        }
-
-
-
-
-
-
-
-    }
-
-
-    //UPDATE WITH BOSSES WHICH DISPLAY KILL TIMES
-
-    //identifies weather or not a boss displays kill times in chat, type 1 = yes, type 0 = no.
-    public int bossType()
-    {
-        //this list contains all bossess which give time in chat, it is assumed if the boss is not on this list that the boss does not display time in chat.
-        ArrayList<String> displayBosses = new ArrayList<String>();
-        displayBosses.add("Zulrah");
-        displayBosses.add("Vorkath");
-        displayBosses.add("Hydra");
-        displayBosses.add("Grotesque Guardians");
-        displayBosses.add("Corrupted Gauntlet");
-        displayBosses.add("Gauntlet");
-        displayBosses.add("Nightmare");
-        displayBosses.add("Chambers");
-        displayBosses.add("CM Chambers");
-        displayBosses.add("Theater");
-        displayBosses.add("TzTok-Jad");
-        displayBosses.add("TzKal-Zuk");
-
-        if(displayBosses.contains(sessionNpc))
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
-        }
-    }
-
-
-    //sets the values at a start of a new session
-    private void sessionInitializer()
-    {
-        totalSessionStart = Instant.now();
-        configState = getBankConfigState();
-        startTime = Instant.now();
-    }
-
-
-//END OF SECTION
-//#############################################################################################################################################
-
-
-
-
-
-//                                                         SETTERS AND CHECKERS
-//##############################################################################################################################################
-
-
-    //checks to make sure the boss you are killing has not changed
-    public void sessionChecker()
-    {
-        timeoutStart = Instant.now();
-        //session changed
-        if (!sessionNpc.equals(currentBoss) || getBankConfigState() != configState)
-        {
-            sessionReset();
-        }
-    }
-
-
     //resets the session when you change from one boss to another
     public void sessionReset()
     {
@@ -1059,37 +1178,64 @@ public class KillsPerHourPlugin extends Plugin
         reset();
         killsThisSession = 1;
         sessionNpc = currentBoss;
-        totalTime = bossKillTime();
+
+        if(noDisplayBosses.contains(sessionNpc))
+        {
+            firstKillTime = generalTimer(killTimerStart);
+            totalTime = firstKillTime;
+            totalKillTime = firstKillTime;
+            killTimeMessage(currentBoss);
+        }
+
+        if(!noDisplayBosses.contains(sessionNpc))
+        {
+            totalTime = bossKillTime();
+        }
+
+        addInfoBox();
+
+        panel.setBossIcon();
+
         startTime = Instant.now();
     }
 
 
-    //ends the session
+    //ends the session setting all values to null / zero or equivelant.
     public void sessionEnd()
     {
-        //Displays end of session stats in chat
-        if(sessionNpc != null && config.outputOnChange())
+        if(sessionNpc != null)
         {
-            updateSessionInfoCache();
-            sessionInfoOutputMessage();
+            //Displays end of session stats in chat
+            if(config.outputOnChange())
+            {
+                updateSessionInfoCache();
+                sessionInfoOutputMessage();
+            }
+            reset();
+            killsThisSession = 0;
+            sessionNpc = null;
+            currentBoss = null;
+            totalTime = 0;
+            totalBossKillTime = 0;
+
+            totalKillTime = 0;
+
+            infoBoxManager.removeInfoBox(infobox);
+
+            panel.setSessionInfo();
         }
-        reset();
-        killsThisSession = 0;
-        sessionNpc = null;
-        currentBoss = null;
-        totalTime = 0;
-        totalBossKillTime = 0;
+
     }
 
     public void reset()
     {
         paused = false;
         pauseTime = 0;
-        sessionHasBeenPaused = false;
         configState = getBankConfigState();
-        timeSpentBanking = 0;
-        bankingOffset = 0;
+        timeSpentIdle = 0;
         timerOffset = 0;
+        attkCount = 0;
+
         timeoutStart = Instant.now();
         totalBossKillTime = bossKillTime();
         totalSessionStart = Instant.now();
@@ -1097,22 +1243,23 @@ public class KillsPerHourPlugin extends Plugin
 
 
     //these values are fetched before any other code is run when a kill happens, that means that if a session is siwtched these values will hold the info of the last session.
-    private int cachedSessionKills;
-    private String cachedAvgKillTime;
-    private String cachedKPH;
-    private String cachedBankTime;
-    private String cachedSessionTime;
+     int cachedSessionKills;
+     String cachedAvgKillTime;
+     String cachedKPH;
+     String cachedIdleTime;
+     String cachedSessionTime;
+     String cachedSessionNpc;
 
     //this updates the cache variables used to store the info chatmessage output, when this is called it gets the inforation at time of run
     public void updateSessionInfoCache()
     {
-        DecimalFormat df = new DecimalFormat("#.#");
         cacheHasInfo = true;
-        cachedKPH = df.format(killsPerHour);
+        cachedKPH = formatKPH();
         cachedSessionKills = killsThisSession;
         cachedAvgKillTime = avgKillTimeConverter();
-        cachedBankTime = timeConverter(timeSpentBanking);
+        cachedIdleTime = timeConverter(timeSpentIdle);
         cachedSessionTime = timeConverter(totalSessionTime);
+        cachedSessionNpc = sessionNpc;
     }
 
 
@@ -1124,9 +1271,9 @@ public class KillsPerHourPlugin extends Plugin
         chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("KPH: " + cachedKPH).build());
         chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Kills: " + cachedSessionKills).build());
         chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Avg Kill: " + cachedAvgKillTime).build());
-        if(config.accountForBank() && config.displayBankingTime())
+        if(config.accountForIdle() && config.displayIdleTime())
         {
-            chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Bank/Idle: " + cachedBankTime).build());
+            chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Bank/Idle: " + cachedIdleTime).build());
         }
         chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Session Time: " + cachedSessionTime).build());
         chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("-------------------------").build());
@@ -1154,27 +1301,40 @@ public class KillsPerHourPlugin extends Plugin
     //Command to pause the session
     private void pauseCommand(ChatMessage chatMessage, String message)
     {
-        if(!paused && sessionNpc != null)
-        {
-            chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Session Paused").build());
-            sessionHasBeenPaused = true;
-            paused = true;
-            pauseStart = Instant.now();
-
-        }
+       sessionPause();
     }
 
     //Command to resume the session
     private void resumeCommand(ChatMessage chatMessage, String message)
     {
+        sessionResume();
+    }
+
+    public void sessionPause()
+    {
+        if(!paused && sessionNpc != null)
+        {
+            chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Session Paused").build());
+            paused = true;
+            pauseStart = Instant.now();
+            panel.setBossNameColor();
+        }
+    }
+
+    public void sessionResume()
+    {
         if(paused)
         {
             paused = false;
-            pauseTime += pauseTimer();
+            pauseTime += generalTimer(pauseStart);
             timeoutStart = Instant.now();
+            attkCount = 0;
             chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Session Resumed").build());
         }
     }
+
+
+
 
 
 //END SECTION
@@ -1203,19 +1363,69 @@ public class KillsPerHourPlugin extends Plugin
         {
             killsPerHour = 3600D / averageKillTime;
         }
+
+        panel.setSessionInfo();
+    }
+
+    public String formatKPH()
+    {
+        int kph;
+        switch (config.kphMethod())
+        {
+            case PRECISE:
+                DecimalFormat df = new DecimalFormat("#.#");
+                killsPerHour = Double.parseDouble(df.format(killsPerHour));
+                return String.valueOf(killsPerHour);
+
+            case ROUNDED:
+                kph = (int)(Math.round(killsPerHour));
+                return String.valueOf(kph);
+
+            case ROUND_UP:
+                kph = (int)(Math.ceil(killsPerHour));
+                return String.valueOf(kph);
+
+            case TRADITIONAL:
+                kph = (int)killsPerHour;
+                return String.valueOf(kph);
+
+            default:
+                return String.valueOf(killsPerHour);
+
+        }
     }
 
 
     //simply calcultes the time not spent killing a boss who DOES have a time display
-    public void timeSpentBanking()
+    public void timeSpentIdle()
     {
-        timeSpentBanking = totalTime - totalBossKillTime;
+        if(bossType() == 0)
+        {
+            timeSpentIdle = totalTime - totalKillTime;
+        }
+        if(bossType() == 1)
+        {
+            timeSpentIdle = totalTime - totalBossKillTime;
+        }
+    }
+
+    //identifies weather or not a boss displays kill times in chat, type 1 = yes, type 0 = no.
+    public int bossType()
+    {
+        if(displayBosses.contains(sessionNpc))
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     //gets the current value of the config option to turn on banking adjustment (true / false)
     public boolean getBankConfigState()
     {
-        return config.accountForBank();
+        return config.accountForIdle();
     }
 
 
@@ -1266,14 +1476,14 @@ public class KillsPerHourPlugin extends Plugin
     {
         getTotalBossKillTime();
 
-        if(config.accountForBank())
+        if(config.accountForIdle())
         {
             if(killsThisSession == 1)
             {
                 timerOffset = getKillTime();
             }
-            totalTime = (sessionTimer() + timerOffset) - pauseTime;
-            timeSpentBanking();
+            totalTime = (generalTimer(startTime) + timerOffset) - pauseTime;
+            timeSpentIdle();
             return totalTime;
         }
 
@@ -1283,6 +1493,43 @@ public class KillsPerHourPlugin extends Plugin
             return getKillTime();
         }
 
+    }
+
+    public void noDisplayKillTimeGetter()
+    {
+        if(sessionNpc.equals(lastValidBoss.getName()) || sMethods.dagKingsCheck())
+        {
+            if(config.accountForIdle())
+            {
+                totalTime = (generalTimer(startTime) + firstKillTime) - pauseTime;
+            }
+            else
+            {
+                totalTime += generalTimer(killTimerStart);
+            }
+
+            totalKillTime += generalTimer(killTimerStart);
+            attkCount = 0;
+            timeSpentIdle();
+
+            if(sMethods.dagKingsCheck())
+            {
+                killTimeMessage(currentNPC.getName());
+            }
+            else
+            {
+                killTimeMessage(currentBoss);
+            }
+
+        }
+    }
+
+    public void killTimeMessage(String boss)
+    {
+        if(config.displayKillTimes())
+        {
+            client.addChatMessage(ChatMessageType.GAMEMESSAGE,"", boss + " Fight Duration: <col=ff0000>" + timeConverter(generalTimer(killTimerStart)),"");
+        }
     }
 
 
@@ -1298,23 +1545,15 @@ public class KillsPerHourPlugin extends Plugin
 //############################################################################################################################################
 
     //times the entire session starting from when the first kill happens, used to track bossess with and without display
-    public int sessionTimer()
+    public int generalTimer(Instant start)
     {
         String elapsedFormated;
-        Duration elapsed = Duration.between(startTime, Instant.now());
+        Duration elapsed = Duration.between(start, Instant.now());
         final String formatString = "ss";
         elapsedFormated = DurationFormatUtils.formatDuration(elapsed.toMillis(), formatString, true);
         return Integer.parseInt(elapsedFormated);
     }
 
-    public int pauseTimer()
-    {
-        String elapsedFormated;
-        Duration elapsed = Duration.between(pauseStart, Instant.now());
-        final String formatString = "ss";
-        elapsedFormated = DurationFormatUtils.formatDuration(elapsed.toMillis(), formatString, true);
-        return Integer.parseInt(elapsedFormated);
-    }
 
 
     //Tracks the total time you have been in a given session
@@ -1329,9 +1568,12 @@ public class KillsPerHourPlugin extends Plugin
             totalSessionTime = Integer.parseInt(elapsedFormated) + timerOffset - pauseTime;
         }
         else
-        {
-            totalSessionTime = Integer.parseInt(elapsedFormated) + bankingOffset - pauseTime;
+        {                                                          //changed from banking offset to test out new method
+            totalSessionTime = Integer.parseInt(elapsedFormated) + firstKillTime - pauseTime;
         }
+
+
+        panel.setSessionTimeLabel();
 
     }
 
@@ -1354,25 +1596,6 @@ public class KillsPerHourPlugin extends Plugin
     }
 
 
-    //this is used to get the time it took from the first kill of a boss to the second kill of a boss
-    //this is used when the boss dose not display kill time
-    public void bankingOffset()
-    {
-
-        Duration offsetTime = Duration.between(startTime, secondKillTime);
-        String offsetTimeFormated;
-        final String formatString = "ss";
-        offsetTimeFormated = DurationFormatUtils.formatDuration(offsetTime.toMillis(), formatString, true);
-
-        if(sessionHasBeenPaused)
-        {
-            bankingOffset = Integer.parseInt(offsetTimeFormated) - pauseTime;
-        }
-        else
-        {
-            bankingOffset = Integer.parseInt(offsetTimeFormated);
-        }
-    }
 
 //SECTION END
 //###################################################################################################################################
@@ -1440,9 +1663,9 @@ public class KillsPerHourPlugin extends Plugin
 
 
     @Provides
-    com.killsperhour.KillsPerHourConfig provideConfig(ConfigManager configManager)
+    KphConfig provideConfig(ConfigManager configManager)
     {
-        return configManager.getConfig(com.killsperhour.KillsPerHourConfig.class);
+        return configManager.getConfig(KphConfig.class);
     }
 
     @Override
@@ -1454,7 +1677,13 @@ public class KillsPerHourPlugin extends Plugin
         chatCommandManager.registerCommandAsync("!Pause", this::pauseCommand);
         chatCommandManager.registerCommandAsync("!Resume", this::resumeCommand);
 
-        sessionHasBeenPaused = false;
+        if(config.showSidePanel())
+        {
+            buildSidePanel();
+        }
+
+        kphBossInfo.registerBossLists();
+
         paused = false;
         cacheHasInfo = false;
         overlayManager.add(overlay);
@@ -1470,6 +1699,7 @@ public class KillsPerHourPlugin extends Plugin
         chatCommandManager.unregisterCommand("!Pause");
         chatCommandManager.unregisterCommand("!Resume");
 
+        infoBoxManager.removeInfoBox(infobox);
         overlayManager.remove(overlay);
     }
 }

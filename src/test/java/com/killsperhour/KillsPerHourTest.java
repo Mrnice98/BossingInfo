@@ -7,7 +7,7 @@ public class KillsPerHourTest
 {
 	public static void main(String[] args) throws Exception
 	{
-		ExternalPluginManager.loadBuiltin(KillsPerHourPlugin.class);
+		ExternalPluginManager.loadBuiltin(KphPlugin.class);
 		RuneLite.main(args);
 	}
 }

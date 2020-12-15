@@ -7,7 +7,6 @@
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
@@ -31,7 +30,7 @@ import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
 
 @ConfigGroup("averagetime")
-public interface KillsPerHourConfig extends Config
+public interface KphConfig extends Config
 {
 
     @ConfigSection(
@@ -41,6 +40,14 @@ public interface KillsPerHourConfig extends Config
             closedByDefault = true
     )
     String displaySection = "Display Options";
+
+    @ConfigSection(
+            name = "General Settings",
+            description = "General Settings",
+            position = 1,
+            closedByDefault = false
+    )
+    String generalSettings = "General Settings";
 
 
 
@@ -58,6 +65,16 @@ public interface KillsPerHourConfig extends Config
 
     @ConfigItem(
             position = 1,
+            keyName = "Display Infobox",
+            name = "Display Infobox",
+            description = "Enables the infobox",
+            section = displaySection
+
+    )
+    default boolean renderInfobox() { return false; }
+
+    @ConfigItem(
+            position = 2,
             keyName = "Average Kill Time",
             name = "Average Kill Time",
             description = "Display Average Kill Time",
@@ -66,7 +83,7 @@ public interface KillsPerHourConfig extends Config
     default boolean averageKillTime() { return false; }
 
     @ConfigItem(
-            position = 2,
+            position = 3,
             keyName = "Kills This Session",
             name = "Kills This Session",
             description = "Display Kills This Session",
@@ -75,8 +92,8 @@ public interface KillsPerHourConfig extends Config
     default boolean killsThisSession() { return false; }
 
     @ConfigItem(
-            position = 3,
-            keyName = "Display Session Time",
+            position = 4,
+            keyName = "Session Time",
             name = "Session Time",
             description = "Displays a running count of the session time ",
             section = displaySection
@@ -84,50 +101,70 @@ public interface KillsPerHourConfig extends Config
     default boolean displayTotalTime() { return false; }
 
     @ConfigItem(
-            position = 4,
-            keyName = "Display Banking Time",
-            name = "Banking Time",
-            description = "Toggles the display for banking time, Only works if 'Account for Banking' is enabled ",
+            position = 5,
+            keyName = "Idle Time",
+            name = "Idle Time",
+            description = "Toggles the display for Idle time, Only works if 'Account for Idle' is enabled ",
             section = displaySection
     )
-    default boolean displayBankingTime() { return false; }
+    default boolean displayIdleTime() { return false; }
 
 //#######################################################################################################################
 
 
-    //bosses with no chat display essentially account for banking regardless.
+//                                        GENERAL SECTION
+//#######################################################################################################################
+
+
+    @ConfigItem(
+            position = 0,
+            keyName = "Side Panel",
+            name = "Side Panel",
+            description = "Enables the side panel",
+            section = generalSettings
+    )
+    default boolean showSidePanel() { return true; }
+
     @ConfigItem(
             position = 1,
-            keyName = "Account For Banking",
-            name = "Account for Banking",
-            description = "Take banking/downtime into account. " +
-                          "Changing this option will reset session on the next kill. " + "Only effects bosses who display times in chat"
+            keyName = "Kill Duration",
+            name = "Kill Duration",
+            description = "Upon a kill a chat message will be added with your kill time",
+            section = generalSettings
+
     )
-    default boolean accountForBank() { return false; }
-
-
+    default boolean displayKillTimes() { return false; }
 
     @ConfigItem(
-            position = 9,
-            keyName = "Output Info On Session Change",
+            position = 2,
+            keyName = "Output Info",
             name = "Output Info",
-            description = "Outputs session info when session is ended or switched"
-
+            description = "Outputs session info when session is ended or switched",
+            section = generalSettings
     )
     default boolean outputOnChange() { return false; }
 
+    @ConfigItem(
+            position = 3,
+            keyName = "Account For Idle time",
+            name = "Account for Idle time",
+            description = "Take Idle time into account with calculations. Changing this option will reset session on the next kill.",
+            section = generalSettings
+    )
+    default boolean accountForIdle() { return false; }
 
 
     @ConfigItem(
-            position = 10,
+            position = 4,
             keyName = "Session Timeout",
             name = "Session Timeout",
-            description = "Set the session timeout time in minutes (set to 0 for no timeout time)"
+            description = "Set the session timeout time in minutes (set to 0 for no timeout time)",
+            section = generalSettings
     )
     default int timeoutTime() { return 0; }
 
 
-    //triditional = integer math, same as round down
+    //traditional = integer math, same as round down
     enum KphMethod
     {
         PRECISE,
@@ -137,10 +174,11 @@ public interface KillsPerHourConfig extends Config
     }
 
     @ConfigItem(
+            position = 5,
             keyName = "KPH Calc Method",
             name = "KPH Calc",
             description = "Allows you to choose the method KPH calculated via",
-            position = 11
+            section = generalSettings
     )
     default KphMethod kphMethod() { return KphMethod.PRECISE; }
 
@@ -153,10 +191,11 @@ public interface KillsPerHourConfig extends Config
     }
 
     @ConfigItem(
+            position = 6,
             keyName = "Dagannoth Selector",
             name = "Dagannoth Selector",
             description = "Allows you to select which Dagannoth King the plugin will track",
-            position = 12
+            section = generalSettings
     )
     default DksSelector dksSelector() { return DksSelector.Kings; }
 
