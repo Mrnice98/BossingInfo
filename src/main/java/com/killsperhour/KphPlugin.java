@@ -312,8 +312,11 @@ public class KphPlugin extends Plugin
         {
             if(lastValidBoss.isDead() && stoper == 0)
             {
+                if(lastValidBoss.getId() != NpcID.KALPHITE_QUEEN_963)
+                {
+                    attkCount = 0;
+                }
                 stoper = 1;
-                attkCount = 0;
             }
             if(!lastValidBoss.isDead() && stoper == 1)
             {
