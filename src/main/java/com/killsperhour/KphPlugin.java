@@ -386,7 +386,7 @@ public class KphPlugin extends Plugin
     {
         this.panel = (KphPanel) this.injector.getInstance(KphPanel.class);
         this.panel.sidePanelInitializer();
-        BufferedImage icon = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "icon.png");
+        BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "/icon.png");
         NavigationButton navButton = NavigationButton.builder().tooltip("KPH Tracker").icon(icon).priority(10).panel(this.panel).build();
         this.clientToolbar.addNavigation(navButton);
     }

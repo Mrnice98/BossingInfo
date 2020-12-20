@@ -357,8 +357,8 @@ class KphPanel extends PluginPanel {
 
     static
     {
-        BufferedImage discordPNG = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "discord_icon.png");
-        BufferedImage githubPNG = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "github_icon.png");
+        BufferedImage discordPNG = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "/discord_icon.png");
+        BufferedImage githubPNG = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "/github_icon.png");
         DISCORD_ICON = new ImageIcon(discordPNG);
         DISCORD_HOVER = new ImageIcon(ImageUtil.luminanceOffset(discordPNG, -80));
         GITHUB_ICON = new ImageIcon(githubPNG);
