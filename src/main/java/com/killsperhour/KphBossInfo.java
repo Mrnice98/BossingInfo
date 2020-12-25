@@ -52,7 +52,7 @@ public class KphBossInfo
            plugin.bossIcon.put("Giant Mole", (ItemID.BABY_MOLE));
            plugin.bossIcon.put("Sarachnis", (ItemID.SRARACHA));
            plugin.bossIcon.put("Abyssal Sire", (ItemID.ABYSSAL_ORPHAN));
-           plugin.bossIcon.put("Zilyana", (ItemID.PET_ZILYANA));
+           plugin.bossIcon.put("Commander Zilyana", (ItemID.PET_ZILYANA));
            plugin.bossIcon.put("General Graardor", (ItemID.PET_GENERAL_GRAARDOR));
            plugin.bossIcon.put("Kree'arra", (ItemID.PET_KREEARRA));
            plugin.bossIcon.put("K'ril Tsutsaroth", (ItemID.PET_KRIL_TSUTSAROTH));
@@ -74,7 +74,7 @@ public class KphBossInfo
            plugin.bossIcon.put("Dagannoth Rex", (ItemID.PET_DAGANNOTH_REX));
            plugin.bossIcon.put("Dagannoth Supreme", (ItemID.PET_DAGANNOTH_SUPREME));
            plugin.bossIcon.put("Dagannoth Kings", (ItemID.DAGANNOTH));
-           
+
            //Adding display boss list
            plugin.displayBosses.add("Zulrah");
            plugin.displayBosses.add("Vorkath");
@@ -88,17 +88,19 @@ public class KphBossInfo
            plugin.displayBosses.add("Theater");
            plugin.displayBosses.add("TzTok-Jad");
            plugin.displayBosses.add("TzKal-Zuk");
-           
+
            //Adding Non display boss list
            plugin.noDisplayBosses.add("Giant Mole");
            plugin.noDisplayBosses.add("Sarachnis");
            plugin.noDisplayBosses.add("Abyssal Sire");
-           plugin.noDisplayBosses.add("Zilyana");
+           plugin.noDisplayBosses.add("Commander Zilyana");
            plugin.noDisplayBosses.add("General Graardor");
            plugin.noDisplayBosses.add("Kree'arra");
            plugin.noDisplayBosses.add("K'ril Tsutsaroth");
            plugin.noDisplayBosses.add("Kraken");
+           plugin.noDisplayBosses.add("Enormous Tentacle");
            plugin.noDisplayBosses.add("Thermy");
+           plugin.noDisplayBosses.add("Thermonuclear smoke devil");
            plugin.noDisplayBosses.add("Cerberus");
            plugin.noDisplayBosses.add("King Black Dragon");
            plugin.noDisplayBosses.add("Scorpia");
@@ -106,6 +108,7 @@ public class KphBossInfo
            plugin.noDisplayBosses.add("Crazy Archaeologist");
            plugin.noDisplayBosses.add("Chaos Elemental");
            plugin.noDisplayBosses.add("Vet'ion");
+           plugin.noDisplayBosses.add("Vet'ion Reborn");
            plugin.noDisplayBosses.add("Venenatis");
            plugin.noDisplayBosses.add("Barrows");
            plugin.noDisplayBosses.add("Deranged Archaeologist");
@@ -115,6 +118,13 @@ public class KphBossInfo
            plugin.noDisplayBosses.add("Dagannoth Rex");
            plugin.noDisplayBosses.add("Dagannoth Supreme");
            plugin.noDisplayBosses.add("Dagannoth Kings");
+           plugin.noDisplayBosses.add("Verac the Defiled");
+           plugin.noDisplayBosses.add("Torag the Corrupted");
+           plugin.noDisplayBosses.add("Karil the Tainted");
+           plugin.noDisplayBosses.add("Guthan the Infested");
+           plugin.noDisplayBosses.add("Dharok the Wretched");
+           plugin.noDisplayBosses.add("Ahrim the Blighted");
+
 
         }
 

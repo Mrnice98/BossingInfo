@@ -55,59 +55,59 @@ public interface KphConfig extends Config
 //#########################################################################################################
     @ConfigItem(
             position = 0,
-            keyName = "Enable Overlay",
+            keyName = "Overlay",
             name = "Enable Overlay",
             description = "Enables the overlay",
             section = displaySection
 
     )
-    default boolean enableOverlay() { return true; }
+    default boolean enableOverlay() { return false; }
 
     @ConfigItem(
             position = 1,
-            keyName = "Display Infobox",
+            keyName = "Infobox",
             name = "Display Infobox",
             description = "Enables the infobox",
             section = displaySection
 
     )
-    default boolean renderInfobox() { return false; }
+    default boolean renderInfobox() { return true; }
 
     @ConfigItem(
             position = 2,
-            keyName = "Average Kill Time",
+            keyName = "Display Average Kill Time",
             name = "Average Kill Time",
             description = "Display Average Kill Time",
             section = displaySection
     )
-    default boolean averageKillTime() { return false; }
+    default boolean averageKillTime() { return true; }
 
     @ConfigItem(
             position = 3,
-            keyName = "Kills This Session",
+            keyName = "Display Kills This Session",
             name = "Kills This Session",
             description = "Display Kills This Session",
             section = displaySection
     )
-    default boolean killsThisSession() { return false; }
+    default boolean killsThisSession() { return true; }
 
     @ConfigItem(
             position = 4,
-            keyName = "Session Time",
+            keyName = "Display Session Time",
             name = "Session Time",
             description = "Displays a running count of the session time ",
             section = displaySection
     )
-    default boolean displayTotalTime() { return false; }
+    default boolean displayTotalTime() { return true; }
 
     @ConfigItem(
             position = 5,
-            keyName = "Idle Time",
+            keyName = "Display Idle Time",
             name = "Idle Time",
             description = "Toggles the display for Idle time, Only works if 'Account for Idle' is enabled ",
             section = displaySection
     )
-    default boolean displayIdleTime() { return false; }
+    default boolean displayIdleTime() { return true; }
 
 //#######################################################################################################################
 
@@ -127,13 +127,13 @@ public interface KphConfig extends Config
 
     @ConfigItem(
             position = 1,
-            keyName = "Kill Duration",
+            keyName = "Display Kill Duration",
             name = "Kill Duration",
             description = "Upon a kill a chat message will be added with your kill time",
             section = generalSettings
 
     )
-    default boolean displayKillTimes() { return false; }
+    default boolean displayKillTimes() { return true; }
 
     @ConfigItem(
             position = 2,
@@ -146,12 +146,12 @@ public interface KphConfig extends Config
 
     @ConfigItem(
             position = 3,
-            keyName = "Account For Idle time",
+            keyName = "Idle time",
             name = "Account for Idle time",
             description = "Take Idle time into account with calculations. Changing this option will reset session on the next kill.",
             section = generalSettings
     )
-    default boolean accountForIdle() { return false; }
+    default boolean accountForIdle() { return true; }
 
 
     @ConfigItem(

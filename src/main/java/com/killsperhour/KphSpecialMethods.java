@@ -36,6 +36,125 @@ public class KphSpecialMethods
     private KphConfig config;
 
 
+
+
+
+//                                                  KRAKEN SECTION
+//##################################################################################################################################
+
+    public boolean krakenChecker()
+    {
+        if(plugin.lastValidBoss.getName() != null)
+        {
+            return (plugin.lastValidBoss.getName().equals("Kraken") || plugin.lastValidBoss.getName().equals("Enormous Tentacle"));
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public Instant krakenTimeClac()
+    {
+        if(plugin.lastValidBoss.getName() != null)
+        {
+            if(krakenChecker())
+            {
+                if(plugin.krakenStart == null)
+                {
+                    plugin.krakenStart = Instant.now();
+                }
+                return plugin.krakenStart;
+            }
+        }
+        return null;
+    }
+
+    public void krakenTimeClear()
+    {
+        plugin.krakenStart = null;
+    }
+
+
+//                                              SIRE SECTION
+//###################################################################################################################
+
+    public boolean sireChecker()
+    {
+        if(plugin.lastValidBoss.getName() != null)
+        {
+            return (plugin.lastValidBoss.getName().equals("Abyssal Sire"));
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public void sireTimeClac()
+    {
+        if(plugin.message.contains("The Sire has been disorientated temporarily.") && plugin.sireStart == null)
+        {
+            plugin.sireStart = Instant.now();
+        }
+    }
+
+    public void sireTimeClear()
+    {
+        plugin.sireStart = null;
+    }
+
+
+//                                                    BARROWS SECTION
+//##################################################################################################################################
+
+
+
+    public Instant barrowsTimeClac()
+    {
+        if(plugin.lastValidBoss.getName() != null)
+        {
+            if(barrowsChecker())
+            {
+                if(plugin.barrowsStart == null)
+                {
+                    plugin.barrowsStart = Instant.now();
+                }
+                return plugin.barrowsStart;
+
+            }
+
+        }
+        return null;
+    }
+
+    public boolean barrowsChecker()
+    {
+        if(plugin.lastValidBoss.getName() != null)
+        {
+            return (plugin.lastValidBoss.getName().equals("Ahrim the Blighted")
+                 || plugin.lastValidBoss.getName().equals("Dharok the Wretched")
+                 || plugin.lastValidBoss.getName().equals("Guthan the Infested")
+                 || plugin.lastValidBoss.getName().equals("Karil the Tainted")
+                 || plugin.lastValidBoss.getName().equals("Torag the Corrupted")
+                 || plugin.lastValidBoss.getName().equals("Verac the Defiled"));
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public void barrowsTimeClear()
+    {
+        plugin.barrowsStart = null;
+    }
+
+
+//                                               DAGGANOTH SECTION
+//##################################################################################################################################
+
+
     public Instant dagTimeClac()
     {
         if(plugin.lastValidBoss.getName() != null)
@@ -104,6 +223,33 @@ public class KphSpecialMethods
             plugin.supremeStart = null;
         }
     }
+
+
+    //should work but needs testing ********************************************
+    public void dagTimeClearTwo()
+    {
+        if(plugin.lastValidBoss.getName() != null)
+        {
+            switch (plugin.lastValidBoss.getName())
+            {
+                case "Dagannoth Prime":
+                    System.out.println("prime caler");
+                    plugin.primeStart = null;
+                    break;
+
+                case "Dagannoth Rex":
+                    System.out.println("rex clearas");
+                    plugin.rexStart = null;
+                    break;
+
+                case "Dagannoth Supreme":
+                    System.out.println("supreme clears");
+                    plugin.supremeStart = null;
+                    break;
+            }
+        }
+    }
+
 
     public boolean dagKingsCheck()
     {

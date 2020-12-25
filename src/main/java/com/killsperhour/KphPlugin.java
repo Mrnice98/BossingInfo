@@ -52,7 +52,10 @@ import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @PluginDescriptor(
@@ -99,6 +102,7 @@ public class KphPlugin extends Plugin
 
     private KphInfobox infobox;
 
+    private NavigationButton navButton;
 
     private Instant startTime;
     private Instant totalSessionStart = Instant.now();
@@ -124,7 +128,7 @@ public class KphPlugin extends Plugin
     private final int[] cGauntletRegion = {7768};
     private final int[] gargBossRegion = {6727};
 
-    private boolean configState;
+
     boolean cacheHasInfo;
 
     private NPC lastAttackedBoss;
@@ -139,6 +143,9 @@ public class KphPlugin extends Plugin
     Instant primeStart;
     Instant rexStart;
     Instant supremeStart;
+    Instant barrowsStart;
+    Instant sireStart;
+    Instant krakenStart;
 
     double killsPerHour;
     int averageKillTime;
@@ -176,6 +183,19 @@ public class KphPlugin extends Plugin
             panel.updateKphMethod();
         }
 
+        if(configChanged.getKey().equals("Side Panel"))
+        {
+            if(config.showSidePanel())
+            {
+                buildSidePanel();
+            }
+            else
+            {
+                clientToolbar.removeNavigation(navButton);
+            }
+        }
+
+
         if(configChanged.getKey().equals("Dagannoth Selector"))
         {
             if(sessionNpc != null)
@@ -187,7 +207,14 @@ public class KphPlugin extends Plugin
             }
         }
 
-        if(configChanged.getKey().equals("Display Infobox"))
+
+        if(configChanged.getKey().equals("Idle time"))
+        {
+            sessionEnd();
+        }
+
+
+        if(configChanged.getKey().equals("Infobox"))
         {
             if(config.renderInfobox())
             {
@@ -214,12 +241,11 @@ public class KphPlugin extends Plugin
        if(gameStateChanged.getGameState() == GameState.LOADING)
        {
            int[] currentRegions = client.getMapRegions();
-           if(currentRegions == gargBossRegion && client.isInInstancedRegion())
+           if(Arrays.equals(currentRegions,gargBossRegion) && client.isInInstancedRegion() && sessionNpc != null)
            {
-               if (!sessionNpc.equals("Grotesque Guardians"))
+               if(!sessionNpc.equals("Grotesque Guardians"))
                {
                    sessionEnd();
-                   sessionNpc = "Grotesque Guardians";
                }
            }
        }
@@ -237,7 +263,8 @@ public class KphPlugin extends Plugin
             return;
         }
         //this delay is needed as if a player hops worlds, the chat is reloaded and the kills per session would 2x if not for the delay to stop the plugin from reading them.
-        if(delayTicks < 3)
+        //if there is a command like !end in the chat that will still be read
+        if(delayTicks < 5)
         {
             return;
         }
@@ -245,6 +272,7 @@ public class KphPlugin extends Plugin
         {
             this.message = chatMessage.getMessage();
             integrityCheck();
+            sMethods.sireTimeClac();
             bossKc();
             bossKillTime();
             calcKillsPerHour();
@@ -276,9 +304,10 @@ public class KphPlugin extends Plugin
                             setKillTimeStart();
                         }
 
+
                         if (currentNPC.getName() != null && lastValidBoss.getName() != null)
                         {
-                            if(!currentNPC.getName().equals(lastValidBoss.getName()))
+                            if(!currentNPC.getName().equals(lastValidBoss.getName()) && lastValidBoss.getId() != NpcID.VETION_REBORN)
                             {
                                 attkCount = 1;
                                 setKillTimeStart();
@@ -291,33 +320,63 @@ public class KphPlugin extends Plugin
         }
     }
 
+
     public void setKillTimeStart()
     {
         if(sMethods.dagChecker())
         {
+            System.out.println("dag time used");
             killTimerStart = sMethods.dagTimeClac();
+            return;
+        }
+        if(sMethods.barrowsChecker())
+        {
+            System.out.println("barrows time used");
+            killTimerStart = sMethods.barrowsTimeClac();
+            return;
+        }
+        if(sMethods.sireChecker())
+        {
+            System.out.println("sire time used");
+            killTimerStart = sireStart;
+            return;
+        }
+        if(sMethods.krakenChecker())
+        {
+            System.out.println("kraken time used");
+            killTimerStart = sMethods.krakenTimeClac();
+            return;
         }
         else
         {
+            System.out.println("other time used");
             killTimerStart = Instant.now();
         }
     }
 
 
     //resets the attkcount when the boss you are attking dies
-    int stoper;
+    int stoper = 0;
     public void bossKilled()
     {
         if(lastValidBoss != null)
         {
             if(lastValidBoss.isDead() && stoper == 0)
             {
-                if(lastValidBoss.getId() != NpcID.KALPHITE_QUEEN_963)
+                //will need to clear the vetion stopper when session changes or ends
+                //can do a smimple counter which says vition killed once 1 and then if he is killed 2 times to let it reset
+                                                     //fisrt form
+                if(lastValidBoss.getId() != NpcID.KALPHITE_QUEEN_963 && lastValidBoss.getId() != NpcID.VETION_REBORN ) //is possible that this need to be reborn version as it seems that how the client reads it
                 {
+                    System.out.println("attk count set to 0");
+
+                    sMethods.dagTimeClearTwo(); //this will reset whichecer dag just died, may cause issues due to clearing time before it is used. needs test. !!!!!
+
                     attkCount = 0;
                 }
                 stoper = 1;
             }
+
             if(!lastValidBoss.isDead() && stoper == 1)
             {
                 stoper = 0;
@@ -387,7 +446,7 @@ public class KphPlugin extends Plugin
         this.panel = (KphPanel) this.injector.getInstance(KphPanel.class);
         this.panel.sidePanelInitializer();
         BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "/icon.png");
-        NavigationButton navButton = NavigationButton.builder().tooltip("KPH Tracker").icon(icon).priority(10).panel(this.panel).build();
+        navButton = NavigationButton.builder().tooltip("KPH Tracker").icon(icon).priority(10).panel(this.panel).build();
         this.clientToolbar.addNavigation(navButton);
     }
 
@@ -410,7 +469,8 @@ public class KphPlugin extends Plugin
         {
             //the "Grotesque Guardians" is the only boss which outputs time before kill count and also uses fight duration
             //therefore we want Fight duration to act normally if not kill GG's
-            if(sessionNpc.equals("Grotesque Guardians"))
+            int[] currentRegions = client.getMapRegions();
+            if(Arrays.equals(currentRegions,gargBossRegion) && client.isInInstancedRegion())
             {
                 displayFirstIncrementerAndInitializer();
             }
@@ -722,6 +782,7 @@ public class KphPlugin extends Plugin
             }
 
             currentBoss = "Abyssal Sire";
+            sMethods.sireTimeClear();
             noDisplayKillTimeGetter();
             sessionChecker();
         }
@@ -734,12 +795,12 @@ public class KphPlugin extends Plugin
             killsThisSession++;
             if(killsThisSession == 1)
             {
-                sessionNpc = "Zilyana";
+                sessionNpc = "Commander Zilyana";
                 sessionInitializer();
                 firstKillTime = generalTimer(killTimerStart);
             }
 
-            currentBoss = "Zilyana";
+            currentBoss = "Commander Zilyana";
             noDisplayKillTimeGetter();
             sessionChecker();
         }
@@ -812,6 +873,7 @@ public class KphPlugin extends Plugin
             }
 
             currentBoss = "Kraken";
+            sMethods.krakenTimeClear();
             noDisplayKillTimeGetter();
             sessionChecker();
         }
@@ -992,6 +1054,7 @@ public class KphPlugin extends Plugin
             }
 
             currentBoss = "Barrows";
+            sMethods.barrowsTimeClear();
             noDisplayKillTimeGetter();
             sessionChecker();
         }
@@ -1066,14 +1129,10 @@ public class KphPlugin extends Plugin
                 sessionNpc = "Dagannoth " + config.dksSelector().toString();
                 sessionInitializer();
                 firstKillTime = generalTimer(killTimerStart);
-
-                System.out.println("dag first kill " + firstKillTime);
             }
 
             currentBoss = "Dagannoth " + config.dksSelector().toString();
-
             sMethods.dagTimeClear();
-
             noDisplayKillTimeGetter();
             sessionChecker();
         }
@@ -1091,7 +1150,6 @@ public class KphPlugin extends Plugin
     private void sessionInitializer()
     {
         totalSessionStart = Instant.now();
-        configState = getBankConfigState();
         startTime = Instant.now();
 
         if(sessionNpc != null)
@@ -1119,7 +1177,7 @@ public class KphPlugin extends Plugin
     {
         timeoutStart = Instant.now();
         //session changed
-        if (!sessionNpc.equals(currentBoss) || getBankConfigState() != configState)
+        if (!sessionNpc.equals(currentBoss))
         {
             sessionReset();
         }
@@ -1130,15 +1188,14 @@ public class KphPlugin extends Plugin
     {
         //Guantlet check
         int[] currentRegions;
-        if(message.contains("Time remaining:") && sessionNpc != null)
+        if(message.contains("Time remaining:") && sessionNpc != null && client.isInInstancedRegion())
         {
             currentRegions = client.getMapRegions();
-
             if (!sessionNpc.equals("Gauntlet") && Arrays.equals(regGauntletRegion, currentRegions))
             {
                 sessionEnd();
             }
-            if(!sessionNpc.equals("Corrupted Gauntlet") && Arrays.equals(cGauntletRegion, currentRegions))
+            else if(!sessionNpc.equals("Corrupted Gauntlet") && Arrays.equals(cGauntletRegion, currentRegions))
             {
                 sessionEnd();
             }
@@ -1148,7 +1205,6 @@ public class KphPlugin extends Plugin
         if(message.contains("The raid has begun!") && sessionNpc != null && client.getPlane() == 3)
         {
             currentRegions = client.getMapRegions();
-
             if (!sessionNpc.equals("CM Chambers") && Arrays.equals(cmRegions, currentRegions))
             {
                 sessionEnd();
@@ -1160,7 +1216,7 @@ public class KphPlugin extends Plugin
         }
 
         //Theater check
-        if(message.contains("Wave 'The Maiden of Sugadinti' complete! Duration:") && sessionNpc != null)
+        if(message.contains("Wave 'The Maiden of Sugadinti' complete! Duration:") && sessionNpc != null && client.isInInstancedRegion())
         {
             if (!sessionNpc.equals("Theater"))
             {
@@ -1180,6 +1236,7 @@ public class KphPlugin extends Plugin
         }
         reset();
         killsThisSession = 1;
+
         sessionNpc = currentBoss;
 
         if(noDisplayBosses.contains(sessionNpc))
@@ -1187,7 +1244,13 @@ public class KphPlugin extends Plugin
             firstKillTime = generalTimer(killTimerStart);
             totalTime = firstKillTime;
             totalKillTime = firstKillTime;
-            killTimeMessage(currentBoss);
+
+            if(lastValidBoss.getName() == null)
+            {
+                killTimeMessage(currentBoss);
+            }
+
+
         }
 
         if(!noDisplayBosses.contains(sessionNpc))
@@ -1196,9 +1259,7 @@ public class KphPlugin extends Plugin
         }
 
         addInfoBox();
-
         panel.setBossIcon();
-
         startTime = Instant.now();
     }
 
@@ -1220,11 +1281,8 @@ public class KphPlugin extends Plugin
             currentBoss = null;
             totalTime = 0;
             totalBossKillTime = 0;
-
             totalKillTime = 0;
-
             infoBoxManager.removeInfoBox(infobox);
-
             panel.setSessionInfo();
         }
 
@@ -1234,14 +1292,25 @@ public class KphPlugin extends Plugin
     {
         paused = false;
         pauseTime = 0;
-        configState = getBankConfigState();
         timeSpentIdle = 0;
         timerOffset = 0;
         attkCount = 0;
 
+        nullStartTimesForSpecialBosses();
+
         timeoutStart = Instant.now();
         totalBossKillTime = bossKillTime();
         totalSessionStart = Instant.now();
+    }
+
+    public void nullStartTimesForSpecialBosses()
+    {
+        sireStart = null;
+        primeStart = null;
+        rexStart = null;
+        supremeStart = null;
+        barrowsStart = null;
+        krakenStart = null;
     }
 
 
@@ -1331,6 +1400,7 @@ public class KphPlugin extends Plugin
             paused = false;
             pauseTime += generalTimer(pauseStart);
             timeoutStart = Instant.now();
+            nullStartTimesForSpecialBosses();
             attkCount = 0;
             chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Session Resumed").build());
         }
@@ -1366,6 +1436,8 @@ public class KphPlugin extends Plugin
         {
             killsPerHour = 3600D / averageKillTime;
         }
+
+        timeSpentIdle();
 
         panel.setSessionInfo();
     }
@@ -1425,13 +1497,6 @@ public class KphPlugin extends Plugin
         }
     }
 
-    //gets the current value of the config option to turn on banking adjustment (true / false)
-    public boolean getBankConfigState()
-    {
-        return config.accountForIdle();
-    }
-
-
 
     //gets the kill time as displayed in the chat
     public int getKillTime()
@@ -1486,12 +1551,16 @@ public class KphPlugin extends Plugin
                 timerOffset = getKillTime();
             }
             totalTime = (generalTimer(startTime) + timerOffset) - pauseTime;
-            timeSpentIdle();
+
             return totalTime;
         }
 
         else
         {
+            if(killsThisSession == 1)
+            {
+                timerOffset = getKillTime();
+            }
             totalTime += getKillTime();
             return getKillTime();
         }
@@ -1500,21 +1569,21 @@ public class KphPlugin extends Plugin
 
     public void noDisplayKillTimeGetter()
     {
-        if(sessionNpc.equals(lastValidBoss.getName()) || sMethods.dagKingsCheck())
+
+        if(config.accountForIdle())
         {
-            if(config.accountForIdle())
-            {
-                totalTime = (generalTimer(startTime) + firstKillTime) - pauseTime;
-            }
-            else
-            {
-                totalTime += generalTimer(killTimerStart);
-            }
+            totalTime = (generalTimer(startTime) + firstKillTime) - pauseTime;
+        }
+        else
+        {
+            totalTime += generalTimer(killTimerStart);
+        }
 
-            totalKillTime += generalTimer(killTimerStart);
-            attkCount = 0;
-            timeSpentIdle();
+        totalKillTime += generalTimer(killTimerStart);
+        attkCount = 0;
 
+        if(lastValidBoss.getName() != null)
+        {
             if(sMethods.dagKingsCheck())
             {
                 killTimeMessage(currentNPC.getName());
@@ -1523,8 +1592,9 @@ public class KphPlugin extends Plugin
             {
                 killTimeMessage(currentBoss);
             }
-
         }
+
+
     }
 
     public void killTimeMessage(String boss)
@@ -1574,7 +1644,6 @@ public class KphPlugin extends Plugin
         {                                                          //changed from banking offset to test out new method
             totalSessionTime = Integer.parseInt(elapsedFormated) + firstKillTime - pauseTime;
         }
-
 
         panel.setSessionTimeLabel();
 
@@ -1702,6 +1771,7 @@ public class KphPlugin extends Plugin
         chatCommandManager.unregisterCommand("!Pause");
         chatCommandManager.unregisterCommand("!Resume");
 
+        clientToolbar.removeNavigation(navButton);
         infoBoxManager.removeInfoBox(infobox);
         overlayManager.remove(overlay);
     }

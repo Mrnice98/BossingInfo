@@ -128,7 +128,7 @@ class KphOverlay extends Overlay
         }
 
 
-        if(kphPlugin.killsThisSession >= 1 && config.enableOverlay())
+        if(kphPlugin.killsThisSession >= 1 && config.enableOverlay() && kphPlugin.sessionNpc != null)
         {
             return panelComponent.render(graphics);
         }
