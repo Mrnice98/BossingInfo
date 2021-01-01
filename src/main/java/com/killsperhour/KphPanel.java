@@ -45,10 +45,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 class KphPanel extends PluginPanel {
-    private final JLabel currentBossNameLabel = new JLabel("Unknown Boss Name");
+    final JLabel currentBossNameLabel = new JLabel("Unknown Boss Name");
     private final JLabel sessionTimeLabel = new JLabel("Session Time: N/A");
     private final JLabel totalBossKillsLabel = new JLabel("Kills: N/A");
     private final JLabel averageKillTimeLabel = new JLabel("Average Kill: N/A");
+    private final JLabel fastestKillTimeLabel = new JLabel("Fastest Kill: N/A");
     private final JLabel killsPerHourLabel = new JLabel("KPH: N/A");
     private final JLabel idleTimeLabel = new JLabel("Idle Time: N/A");
     private final JLabel picLabel = new JLabel();
@@ -66,20 +67,19 @@ class KphPanel extends PluginPanel {
     private static final ImageIcon GITHUB_ICON;
     private static final ImageIcon  GITHUB_HOVER;
 
-
     private final KphConfig config;
 
     private final KphPlugin plugin;
 
-    private final KphBossInfo kphBossInfo;
-
     @Inject
     private ItemManager itemManager;
 
+    JButton pauseResumeButton = new JButton();
+    JButton switchModeButton = new JButton();
 
 
     @Inject
-    KphPanel(KphPlugin plugin, KphBossInfo kphBossInfo, KphConfig config)
+    KphPanel(KphPlugin plugin, KphConfig config)
     {
         this.sessionEndButton = new JPanel();
         this.pauseAndResumeButtons = new JPanel();
@@ -89,7 +89,6 @@ class KphPanel extends PluginPanel {
         this.bossInfoPanel = new JPanel();
         this.icon = new JPanel();
         this.plugin = plugin;
-        this.kphBossInfo = kphBossInfo;
         this.config = config;
     }
 
@@ -117,8 +116,6 @@ class KphPanel extends PluginPanel {
         titlePanel.add(errorPanel, "Center");
         return titlePanel;
     }
-
-
 
 
     private JPanel buildBossInfoPanel()
@@ -155,8 +152,10 @@ class KphPanel extends PluginPanel {
         sessionInfoSection.add(killsPerHourLabel);
         sessionInfoSection.add(totalBossKillsLabel);
         sessionInfoSection.add(averageKillTimeLabel);
+        sessionInfoSection.add(fastestKillTimeLabel);
         sessionInfoSection.add(idleTimeLabel);
         sessionInfoSection.add(sessionTimeLabel);
+
 
 
         bossInfoPanel.add(icon,"East");
@@ -168,10 +167,10 @@ class KphPanel extends PluginPanel {
 
     public void setBossIcon()
     {
-        if(plugin.bossIcon.get(plugin.sessionNpc) != null)
+        if(plugin.sessionNpc != null)
         {
-            AsyncBufferedImage bossSprite = itemManager.getImage(plugin.bossIcon.get(plugin.sessionNpc));
-
+            KphBossInfo kphBossInfo = KphBossInfo.find(plugin.sessionNpc);
+            AsyncBufferedImage bossSprite = itemManager.getImage(kphBossInfo.getIcon());
             //this is how the icon is positioned
             int offset = 150 - ((plugin.sessionNpc.length() * 8) + 6) ;
             icon.setBorder(new EmptyBorder(0, 0, 180,offset));
@@ -180,6 +179,7 @@ class KphPanel extends PluginPanel {
             bossSprite.addTo(picLabel);
         }
     }
+
 
 
 
@@ -203,15 +203,45 @@ class KphPanel extends PluginPanel {
 
         myButtons.setBorder(new EmptyBorder(5, 5, 0, 0));
 
-        JButton pauseButton = new JButton("    Pause    ");
-        JButton resumeButton = new JButton("    Resume    ");
+        switchModeButton = new JButton("     Actual     ");
+
+        switchModeButton.setToolTipText("Switches your information display mode");
+        pauseResumeButton = new JButton("      Pause     ");
 
 
-        pauseButton.addActionListener(e -> plugin.sessionPause());
-        resumeButton.addActionListener(e -> plugin.sessionResume());
+        pauseResumeButton.addActionListener((e) ->
+        {
+            if (plugin.paused)
+            {
+                plugin.sessionResume();
+            }
+            else
+            {
+                plugin.sessionPause();
+            }
+        });
 
-        myButtons.add(resumeButton);
-        myButtons.add(pauseButton);
+        switchModeButton.addActionListener((e) ->
+        {
+            switch (plugin.getCalcMode())
+            {
+                case 0:
+                    plugin.setCalcMode(1);
+                    switchModeButton.setText("    Virtual     ");
+                    plugin.calcKillsPerHour();
+                    break;
+                case 1:
+                    plugin.setCalcMode(0);
+                    switchModeButton.setText("     Actual     ");
+                    plugin.calcKillsPerHour();
+                    break;
+            }
+
+        });
+
+
+        myButtons.add(pauseResumeButton);
+        myButtons.add(switchModeButton);
 
         pauseAndResumeButtons.add(myButtons, "West");
 
@@ -324,6 +354,7 @@ class KphPanel extends PluginPanel {
             totalBossKillsLabel.setText("Kills: " + plugin.killsThisSession);
             idleTimeLabel.setText("Idle Time: " + plugin.timeConverter(plugin.timeSpentIdle));
             currentBossNameLabel.setText(plugin.sessionNpc);
+            fastestKillTimeLabel.setText("Fastest Kill: " + plugin.timeConverter(plugin.fastestKill));
             if(!plugin.paused)
             {
                 currentBossNameLabel.setForeground(new Color(71, 226, 12));
@@ -338,6 +369,7 @@ class KphPanel extends PluginPanel {
             totalBossKillsLabel.setText("Kills: " + plugin.cachedSessionKills);
             idleTimeLabel.setText("Idle Time: " + plugin.cachedIdleTime);
             currentBossNameLabel.setText(plugin.cachedSessionNpc);
+            fastestKillTimeLabel.setText("Fastest Kill: " + plugin.cachedFastestKill);
             currentBossNameLabel.setForeground(new Color(187, 187, 187));
         }
 

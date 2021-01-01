@@ -94,6 +94,12 @@ class KphInfobox extends InfoBox
 			toolTip.append(plugin.timeConverter(plugin.averageKillTime));
 		}
 
+		if(config.fastestKill())
+		{
+			toolTip.append("</br>Fastest Kill: ");
+			toolTip.append(plugin.timeConverter(plugin.fastestKill));
+		}
+
 		if(config.displayIdleTime())
 		{
 			toolTip.append("</br>Idle time: ");
@@ -105,6 +111,9 @@ class KphInfobox extends InfoBox
 			toolTip.append("</br>Session Time: ");
 			toolTip.append(plugin.timeConverter(plugin.totalSessionTime));
 		}
+
+
+
 
 
 		return toolTip.toString();

@@ -105,6 +105,15 @@ class KphOverlay extends Overlay
 
         }
 
+        if (config.fastestKill())
+        {
+            panelComponent.getChildren().add(LineComponent.builder()
+                    .left("Fastest Kill:")
+                    .right(kphPlugin.timeConverter(kphPlugin.fastestKill))
+                    .build());
+
+        }
+
 
         if (config.displayIdleTime())
         {

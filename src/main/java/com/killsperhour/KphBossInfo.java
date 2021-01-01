@@ -24,108 +24,139 @@
  */
 package com.killsperhour;
 
+import com.google.common.collect.ImmutableMap;
 import net.runelite.api.ItemID;
-import javax.inject.Inject;
 
+import java.util.Map;
 
-
-public class KphBossInfo
+enum KphBossInfo
 {
-   
-    @Inject
-    private KphPlugin plugin;
 
-        public void registerBossLists()
+
+    //display type 1 = yes , 0 = no
+    ZULRAH("Zulrah",ItemID.PET_SNAKELING_12940,1,-1),
+    CHAMBERS("Chambers",ItemID.OLMLET,1,-1),
+    CM_CHAMBERS("CM Chambers",ItemID.TEKTINY,1,-1),
+    GAUNTLET("Gauntlet",ItemID.YOUNGLLEF,1,-1),
+    CORRUPTED_GAUNTLET("Corrupted Gauntlet",ItemID.CORRUPTED_YOUNGLLEF,1,-1),
+    THEATER_OF_BLOOD("Theater",ItemID.LIL_ZIK,1,-1),
+    VORKATH("Vorkath",ItemID.VORKI,1,-1),
+    HYDRA("Hydra",ItemID.IKKLE_HYDRA_22748,1,-1),
+    GROTESQUE_GUARDIANS("Grotesque Guardians",ItemID.NOON,1,-1),
+    NIGHTMARE("Nightmare",ItemID.LITTLE_NIGHTMARE,1,-1),
+    TZTOK_JAD("TzTok-Jad",ItemID.TZREKJAD,1,-1),
+    TZKAL_ZUK("TzKal-Zuk",ItemID.TZREKZUK,1,-1),
+
+    //times are in ticks, 120 = 1.2min , 500 = 5min, 200 = 2min, 300 = 3min ect... 100ticks = 1min
+
+    //non-display below
+    GIANT_MOLE("Giant Mole",ItemID.BABY_MOLE,0,120),
+    SARACHNIS("Sarachnis",ItemID.SRARACHA,0,120),
+
+
+
+    ABYSSAL_SIRE("Abyssal Sire",ItemID.ABYSSAL_ORPHAN,0,300),
+
+
+
+    COMMANDER_ZILYANA("Commander Zilyana",ItemID.PET_ZILYANA,0,120),
+    GENERAL_GRAARDOR("General Graardor",ItemID.PET_GENERAL_GRAARDOR,0,120),
+    KREEARRA("Kree'arra",ItemID.PET_KREEARRA,0,120),
+    KRIL_TSUTSAROTH("K'ril Tsutsaroth",ItemID.PET_KRIL_TSUTSAROTH,0,120),
+
+    KRAKEN("Kraken",ItemID.PET_KRAKEN,0,120),
+    ENORMOUS_TENTACLE("Enormous Tentacle",ItemID.PET_KRAKEN,0,120),
+
+    THERMY("Thermy",ItemID.PET_SMOKE_DEVIL,0,120),
+    THERMONUCLEAR_SMOKE_DEVIL("Thermonuclear smoke devil",ItemID.PET_SMOKE_DEVIL,0,120),
+
+    CERBERUS("Cerberus",ItemID.HELLPUPPY,0,40),
+
+    KING_BLACK_DRAGON("King Black Dragon",ItemID.PRINCE_BLACK_DRAGON,0,120),
+    SCORPIA("Scorpia",ItemID.SCORPIAS_OFFSPRING,0,120),
+    CHAOS_FANATIC("Chaos Fanatic",ItemID.ANCIENT_STAFF,0,120),
+
+    CALLISTO("Callisto",ItemID.CALLISTO_CUB,0,120),
+
+    CRAZY_ARCHAEOLOGIST("Crazy Archaeologist",ItemID.FEDORA,0,120),
+    CHAOS_ELEMENTAL("Chaos Elemental",ItemID.PET_CHAOS_ELEMENTAL,0,120),
+    VETION("Vet'ion",ItemID.VETION_JR_13180,0,120),
+    VETION_REBORN("Vet'ion Reborn",ItemID.VETION_JR_13180,0,120),
+    VENENATIS("Venenatis",ItemID.VENENATIS_SPIDERLING,0,120),
+
+    BARROWS("Barrows",ItemID.BARROWS_TELEPORT,0,1500),
+    VERAC_THE_DEFILED("Verac the Defiled",ItemID.BARROWS_TELEPORT,0,1500),
+    TORAG_THE_CORRUPTED("Torag the Corrupted",ItemID.BARROWS_TELEPORT,0,1500),
+    KARIL_THE_TAINTED("Karil the Tainted",ItemID.BARROWS_TELEPORT,0,1500),
+    GUTHAN_THE_INFESTED("Guthan the Infested",ItemID.BARROWS_TELEPORT,0,1500),
+    DHAROK_THE_WRETCHED("Dharok the Wretched",ItemID.BARROWS_TELEPORT,0,1500),
+    AHRIM_THE_BLIGHTED("Ahrim the Blighted",ItemID.BARROWS_TELEPORT,0,1500),
+
+    DERANGED_ARCHAEOLOGIST("Deranged Archaeologist",ItemID.UNIDENTIFIED_RARE_FOSSIL,0,120),
+
+    KALPHITE_QUEEN("Kalphite Queen",ItemID.KALPHITE_PRINCESS,0,300),
+    CORPOREAL_BEAST("Corporeal Beast", ItemID.PET_CORPOREAL_CRITTER,0,300),
+
+    DAGANNOTH_PRIME("Dagannoth Prime",ItemID.PET_DAGANNOTH_PRIME,0,15),
+    DAGANNOTH_REX("Dagannoth Rex",ItemID.PET_DAGANNOTH_REX,0,15),
+    DAGANNOTH_SUPREME("Dagannoth Supreme",ItemID.PET_DAGANNOTH_SUPREME,0,15),
+    DAGANNOTH_KINGS("Dagannoth Kings",ItemID.DAGANNOTH,0,15);
+
+
+    private final int icon;
+    private final String name;
+    private final int displayType;
+    private final int attkTimeout;
+
+
+    KphBossInfo(String name, int icon, int displayType, int attkTimeout)
+    {
+        this.icon = icon;
+        this.name = name;
+        this.displayType = displayType;
+        this.attkTimeout = attkTimeout;
+    }
+
+
+
+    static
+    {
+        ImmutableMap.Builder<String, KphBossInfo> builder = new ImmutableMap.Builder<>();
+
+        for (KphBossInfo kphBossInfo : values())
         {
-           plugin.bossIcon.put("Zulrah", (ItemID.PET_SNAKELING_12940));
-           plugin.bossIcon.put("Chambers", (ItemID.OLMLET));
-           plugin.bossIcon.put("CM Chambers", (ItemID.TEKTINY));
-           plugin.bossIcon.put("Gauntlet", (ItemID.YOUNGLLEF));
-           plugin.bossIcon.put("Corrupted Gauntlet", (ItemID.CORRUPTED_YOUNGLLEF));
-           plugin.bossIcon.put("Theater", (ItemID.LIL_ZIK));
-           plugin.bossIcon.put("Vorkath", (ItemID.VORKI));
-           plugin.bossIcon.put("Hydra", (ItemID.IKKLE_HYDRA_22748));
-           plugin.bossIcon.put("Grotesque Guardians", (ItemID.MIDNIGHT));
-           plugin.bossIcon.put("Nightmare", (ItemID.LITTLE_NIGHTMARE));
-           plugin.bossIcon.put("TzTok-Jad", (ItemID.TZREKJAD));
-           plugin.bossIcon.put("TzKal-Zuk", (ItemID.TZREKZUK));
-           plugin.bossIcon.put("Giant Mole", (ItemID.BABY_MOLE));
-           plugin.bossIcon.put("Sarachnis", (ItemID.SRARACHA));
-           plugin.bossIcon.put("Abyssal Sire", (ItemID.ABYSSAL_ORPHAN));
-           plugin.bossIcon.put("Commander Zilyana", (ItemID.PET_ZILYANA));
-           plugin.bossIcon.put("General Graardor", (ItemID.PET_GENERAL_GRAARDOR));
-           plugin.bossIcon.put("Kree'arra", (ItemID.PET_KREEARRA));
-           plugin.bossIcon.put("K'ril Tsutsaroth", (ItemID.PET_KRIL_TSUTSAROTH));
-           plugin.bossIcon.put("Kraken", (ItemID.PET_KRAKEN));
-           plugin.bossIcon.put("Thermy", (ItemID.PET_SMOKE_DEVIL));
-           plugin.bossIcon.put("Cerberus", (ItemID.HELLPUPPY));
-           plugin.bossIcon.put("King Black Dragon", (ItemID.PRINCE_BLACK_DRAGON));
-           plugin.bossIcon.put("Scorpia", (ItemID.SCORPIAS_OFFSPRING));
-           plugin.bossIcon.put("Chaos Fanatic", (ItemID.ANCIENT_STAFF));
-           plugin.bossIcon.put("Crazy Archaeologist", (ItemID.FEDORA));
-           plugin.bossIcon.put("Chaos Elemental", (ItemID.PET_CHAOS_ELEMENTAL));
-           plugin.bossIcon.put("Vet'ion", (ItemID.VETION_JR_13180));
-           plugin.bossIcon.put("Venenatis", (ItemID.VENENATIS_SPIDERLING));
-           plugin.bossIcon.put("Barrows", (ItemID.BARROWS_TELEPORT));
-           plugin.bossIcon.put("Deranged Archaeologist", (ItemID.UNIDENTIFIED_RARE_FOSSIL));
-           plugin.bossIcon.put("Kalphite Queen", (ItemID.KALPHITE_PRINCESS));
-           plugin.bossIcon.put("Corporeal Beast", (ItemID.PET_CORPOREAL_CRITTER));
-           plugin.bossIcon.put("Dagannoth Prime", (ItemID.PET_DAGANNOTH_PRIME));
-           plugin.bossIcon.put("Dagannoth Rex", (ItemID.PET_DAGANNOTH_REX));
-           plugin.bossIcon.put("Dagannoth Supreme", (ItemID.PET_DAGANNOTH_SUPREME));
-           plugin.bossIcon.put("Dagannoth Kings", (ItemID.DAGANNOTH));
-
-           //Adding display boss list
-           plugin.displayBosses.add("Zulrah");
-           plugin.displayBosses.add("Vorkath");
-           plugin.displayBosses.add("Hydra");
-           plugin.displayBosses.add("Grotesque Guardians");
-           plugin.displayBosses.add("Corrupted Gauntlet");
-           plugin.displayBosses.add("Gauntlet");
-           plugin.displayBosses.add("Nightmare");
-           plugin.displayBosses.add("Chambers");
-           plugin.displayBosses.add("CM Chambers");
-           plugin.displayBosses.add("Theater");
-           plugin.displayBosses.add("TzTok-Jad");
-           plugin.displayBosses.add("TzKal-Zuk");
-
-           //Adding Non display boss list
-           plugin.noDisplayBosses.add("Giant Mole");
-           plugin.noDisplayBosses.add("Sarachnis");
-           plugin.noDisplayBosses.add("Abyssal Sire");
-           plugin.noDisplayBosses.add("Commander Zilyana");
-           plugin.noDisplayBosses.add("General Graardor");
-           plugin.noDisplayBosses.add("Kree'arra");
-           plugin.noDisplayBosses.add("K'ril Tsutsaroth");
-           plugin.noDisplayBosses.add("Kraken");
-           plugin.noDisplayBosses.add("Enormous Tentacle");
-           plugin.noDisplayBosses.add("Thermy");
-           plugin.noDisplayBosses.add("Thermonuclear smoke devil");
-           plugin.noDisplayBosses.add("Cerberus");
-           plugin.noDisplayBosses.add("King Black Dragon");
-           plugin.noDisplayBosses.add("Scorpia");
-           plugin.noDisplayBosses.add("Chaos Fanatic");
-           plugin.noDisplayBosses.add("Crazy Archaeologist");
-           plugin.noDisplayBosses.add("Chaos Elemental");
-           plugin.noDisplayBosses.add("Vet'ion");
-           plugin.noDisplayBosses.add("Vet'ion Reborn");
-           plugin.noDisplayBosses.add("Venenatis");
-           plugin.noDisplayBosses.add("Barrows");
-           plugin.noDisplayBosses.add("Deranged Archaeologist");
-           plugin.noDisplayBosses.add("Kalphite Queen");
-           plugin.noDisplayBosses.add("Corporeal Beast");
-           plugin.noDisplayBosses.add("Dagannoth Prime");
-           plugin.noDisplayBosses.add("Dagannoth Rex");
-           plugin.noDisplayBosses.add("Dagannoth Supreme");
-           plugin.noDisplayBosses.add("Dagannoth Kings");
-           plugin.noDisplayBosses.add("Verac the Defiled");
-           plugin.noDisplayBosses.add("Torag the Corrupted");
-           plugin.noDisplayBosses.add("Karil the Tainted");
-           plugin.noDisplayBosses.add("Guthan the Infested");
-           plugin.noDisplayBosses.add("Dharok the Wretched");
-           plugin.noDisplayBosses.add("Ahrim the Blighted");
-
-
+            builder.put(kphBossInfo.getName(), kphBossInfo);
         }
+        bosses = builder.build();
+    }
+
+    public static final Map<String, KphBossInfo> bosses;
+
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public int getDisplayType()
+    {
+        return displayType;
+    }
+
+    public int getAttkTimeout()
+    {
+        return attkTimeout;
+    }
+
+    public int getIcon()
+    {
+        return icon;
+    }
+
+    public static KphBossInfo find(String name)
+    {
+        return bosses.get(name);
+    }
+
 
 }

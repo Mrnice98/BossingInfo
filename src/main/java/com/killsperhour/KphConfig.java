@@ -84,12 +84,22 @@ public interface KphConfig extends Config
 
     @ConfigItem(
             position = 3,
-            keyName = "Display Kills This Session",
+            keyName = "Fastest Kill",
+            name = "Fastest Kill",
+            description = "Display Fastest Kill",
+            section = displaySection
+    )
+    default boolean fastestKill() { return true; }
+
+    @ConfigItem(
+            position = 3,
+            keyName = "Kills This Session",
             name = "Kills This Session",
             description = "Display Kills This Session",
             section = displaySection
     )
     default boolean killsThisSession() { return true; }
+
 
     @ConfigItem(
             position = 4,
@@ -127,6 +137,15 @@ public interface KphConfig extends Config
 
     @ConfigItem(
             position = 1,
+            keyName = "Side Panel Position",
+            name = "Side Panel Position",
+            description = "Panel icon position, Lower # = higher pos, Higher # = lower pos ",
+            section = generalSettings
+    )
+    default int sidePanelPosition() { return 6; }
+
+    @ConfigItem(
+            position = 2,
             keyName = "Display Kill Duration",
             name = "Kill Duration",
             description = "Upon a kill a chat message will be added with your kill time",
@@ -136,22 +155,13 @@ public interface KphConfig extends Config
     default boolean displayKillTimes() { return true; }
 
     @ConfigItem(
-            position = 2,
+            position = 3,
             keyName = "Output Info",
             name = "Output Info",
             description = "Outputs session info when session is ended or switched",
             section = generalSettings
     )
     default boolean outputOnChange() { return false; }
-
-    @ConfigItem(
-            position = 3,
-            keyName = "Idle time",
-            name = "Account for Idle time",
-            description = "Take Idle time into account with calculations. Changing this option will reset session on the next kill.",
-            section = generalSettings
-    )
-    default boolean accountForIdle() { return true; }
 
 
     @ConfigItem(
