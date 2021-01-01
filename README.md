@@ -14,11 +14,11 @@ Alternatively feel free to leave a comment or open an issue on GitHub
 
 ### **__Supported Bosses:__**                                                                                                                                                                                                                                                                                                   
 - Currently the plugin has full support for the following bosses:  
-  `Zulrah`   `Vorkath`   `Nightmare`   `Theater of Blood`   `Chambers of Xeric & CM`   `Alchemical Hydra`   `Grotesque Guardians`   `The Gauntlet & Corrupted`   `TzTok-Jad`    `Thermonuclear smoke devil`  `Cerberus`   `Chaos Fanatic`   `Crazy archaeologist`   `Scorpia`   `King Black Dragon`  `Chaos Elemental`  `Venenatis`   `Callisto`  `Giant Mole`   `Dagannoth Kings`   `Sarachnis`   `Kalphite Queen`   `Kree'arra`   `Commander Zilyana`   `General Graardor`   `K'ril   Tsutsaroth`   `Corporeal Beast`
+  `Zulrah`   `Vorkath`   `Nightmare`   `Theater of Blood`   `Chambers of Xeric & CM`   `Alchemical Hydra`   `Grotesque Guardians`   `The Gauntlet & Corrupted`   `TzTok-Jad`    `Thermonuclear smoke devil`  `Cerberus`   `Chaos Fanatic`   `Crazy archaeologist`   `Scorpia`   `King Black Dragon`  `Chaos Elemental`  `Venenatis`   `Callisto`  `Giant Mole`   `Dagannoth Kings`   `Sarachnis`   `Kalphite Queen`   `Kree'arra`   `Commander Zilyana`   `General Graardor`   `K'ril   Tsutsaroth`   `Corporeal Beast` `Kraken`  `Abyssal Sire`  `Vet'ion`  `Barrows`  
   
-- Currently The plugin has partial support for:  
+- Newly added:  
   `Kraken`  `Abyssal Sire`  `Vet'ion`  `Barrows`  
-     **These bosses use uniqe mechanics which could lead to innaccurate idle time & exact kill times. please report any issues all four of these bosses are being looked into and        should shortly be added to "full support"*  
+     **These bosses are newly added and may not work perfectly*  
        
 - Currently The plugin does not have support for:  
  `Wintertodt`   `Zalcano`   `Penance Queen`
@@ -101,7 +101,13 @@ Alternatively feel free to leave a comment or open an issue on GitHub
     - Addition of an optional Info Box display  
     - Addition of optional kill time tracking and fight duration output for bosses which would not ordinarily display times in chat  
     - Numerous small changes to naming conventions and minor fixes
-
+    
+- **Version 1.2**   
+    - Add Barrows, Vetion, Sire.
+    - Improve tracking for kraken
+    - Fix Thmery & Zilly
+    - fixed issue where kills would not register correctly when teleporting out at same time as kill
+    - a few backend fixes to make way for the next update
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Description of how the plugin works: **Re Write Needed**
