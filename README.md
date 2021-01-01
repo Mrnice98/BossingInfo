@@ -40,14 +40,17 @@ Alternatively feel free to leave a comment or open an issue on GitHub
 
   - Eanble Overlay-   
   Enables the box overlay.                                          
-  ![Imgur Image](https://i.imgur.com/YfIq3ly.png)
+  ![Imgur Image](https://i.imgur.com/L3oqkuw.png)
   
   - Display Infobox-   
   If enabled a Infobox will display with your KPH in it, Hovering over the infobox will show your full session stats.  
-  ![Imgur Image](https://i.imgur.com/2MxsIY1.png)
+  ![Imgur Image](https://i.imgur.com/3GEBNXG.png)
 
   - Average kill time-  
   If enabled plugin will display your average kill time.
+  
+  - Fastest kill time-  
+  If enabled plugin will display your fastest kill time.
   
   - Kills this Session-  
   If enabled plugin will display your kills this session.
@@ -61,15 +64,19 @@ Alternatively feel free to leave a comment or open an issue on GitHub
 
 - **General Settings**
 
-  - Account for Idle Time-   
-  If enabled the plugin will account for idle time when doing its calculations (changing this option will end your session upon the next kill)  
+  - Side Panel-
+  Enables or Disables the side panel (changes take effect when client is restarted)   
+  ![Imgur Image](https://i.imgur.com/1grrmmS.png)
+    - Actual-
+    this is your bossing info clculated with idle time taken into account.
+    - Virtual-
+    This is your bossing info calculated without idle time taken into account.
+  
+   - Side Panel Position-   
+  Change the postion of the side panel icon on the client sidebar. Lower #'s will move it up, Higher #'s will move it down.  
 
   - Output Info-   
   If enabled when your session ends or switches the plugin will output a chat message to your chatbox with your last sessions information.  
-
-  - Side Panel-
-  Enables or Disables the side panel (changes take effect when client is restarted)   
-  ![Imgur Image](https://i.imgur.com/fLjzQF9.png)
   
   - Kill Duration-  
   If enabled when killing a Non-Display boss the plugin will calculate and output your exact kill time to the chatbox  
@@ -108,6 +115,16 @@ Alternatively feel free to leave a comment or open an issue on GitHub
     - Fix Thmery & Zilly
     - fixed issue where kills would not register correctly when teleporting out at same time as kill
     - a few backend fixes to make way for the next update
+    
+- **Version 1.3**   
+    - Fix barrows.
+    - Fix issue where if "set boss kill count message as spam" setting was enabled plugin would not work.
+    - Change panel layout, and buttons. 
+    - Pause and resume are now one button.
+    - Add button to switch between virtual and actual calculation info.
+    - Add auto pause upon log out
+    - numerous backend changes to better optimize code 
+    
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Description of how the plugin works: **Re Write Needed**
