@@ -133,6 +133,8 @@ public class KphPlugin extends Plugin
     private final int[] regGauntletRegion = {7512};
     private final int[] cGauntletRegion = {7768};
     private final int[] gargBossRegion = {6727};
+    private final int[] fightCaveRegion = {9551};
+    private final int[] infernoRegion = {9043};
 
 
     boolean cacheHasInfo;
@@ -378,7 +380,7 @@ public class KphPlugin extends Plugin
             killTimerStart = sMethods.barrowsTimeClac();
             return;
         }
-        if(sMethods.sireChecker())
+        if(sMethods.sireChecker() && sireStart != null)
         {
             System.out.println("sire time used");
             killTimerStart = sireStart;
@@ -569,6 +571,16 @@ public class KphPlugin extends Plugin
                 displayFirstIncrementerAndInitializer();
             }
             return chatDisplayKillTimeGetter();
+        }
+
+        if(message.contains("Duration:"))
+        {
+            if(Arrays.equals(client.getMapRegions(), fightCaveRegion) || Arrays.equals(client.getMapRegions(), infernoRegion))
+            {
+                //for some reason the timers plugin does not like when i run this as a test, i think its bc im still inside the cave not sure
+                System.out.println("fight caves/inferno");
+                return chatDisplayKillTimeGetter();
+            }
         }
 
         //Chambers identifier

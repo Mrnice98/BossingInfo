@@ -93,9 +93,15 @@ public class KphSpecialMethods
 
     public void sireTimeClac()
     {
-        if(plugin.message.contains("The Sire has been disorientated temporarily.") && plugin.sireStart == null)
+        if(plugin.message.contains("The Sire has been disorientated temporarily."))
         {
-            plugin.sireStart = Instant.now();
+            System.out.println("sire ran");
+            if(plugin.sireStart == null)
+            {
+                plugin.sireStart = Instant.now();
+            }
+            plugin.lastAttkTimeout = 0;
+            plugin.attkTimeout = 300;
         }
     }
 
@@ -233,17 +239,17 @@ public class KphSpecialMethods
             switch (plugin.lastValidBoss.getName())
             {
                 case "Dagannoth Prime":
-                    System.out.println("prime caler");
+                    System.out.println("prime claer");
                     plugin.primeStart = null;
                     break;
 
                 case "Dagannoth Rex":
-                    System.out.println("rex clearas");
+                    System.out.println("rex clear");
                     plugin.rexStart = null;
                     break;
 
                 case "Dagannoth Supreme":
-                    System.out.println("supreme clears");
+                    System.out.println("supreme clear");
                     plugin.supremeStart = null;
                     break;
             }
