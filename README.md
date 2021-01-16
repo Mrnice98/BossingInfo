@@ -125,6 +125,12 @@ Alternatively feel free to leave a comment or open an issue on GitHub
     - Add auto pause upon log out
     - numerous backend changes to better optimize code 
     
+- **Version 1.4**   
+    - Add boss-info logging.
+    - Add boss-info lookup panel, allows you to check your boss info overtime.
+    - Revamp of the kcIdentification system. 
+    - numerous backend changes to better optimize code 
+    
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Description of how the plugin works: **Re Write Needed**
