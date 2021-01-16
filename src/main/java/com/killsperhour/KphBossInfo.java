@@ -27,6 +27,7 @@ package com.killsperhour;
 import com.google.common.collect.ImmutableMap;
 import net.runelite.api.ItemID;
 
+import java.util.HashMap;
 import java.util.Map;
 
 enum KphBossInfo
@@ -34,87 +35,75 @@ enum KphBossInfo
 
 
     //display type 1 = yes , 0 = no
-    ZULRAH("Zulrah",ItemID.PET_SNAKELING_12940,1,-1),
-    CHAMBERS("Chambers",ItemID.OLMLET,1,-1),
-    CM_CHAMBERS("CM Chambers",ItemID.TEKTINY,1,-1),
-    GAUNTLET("Gauntlet",ItemID.YOUNGLLEF,1,-1),
-    CORRUPTED_GAUNTLET("Corrupted Gauntlet",ItemID.CORRUPTED_YOUNGLLEF,1,-1),
-    THEATER_OF_BLOOD("Theater",ItemID.LIL_ZIK,1,-1),
-    VORKATH("Vorkath",ItemID.VORKI,1,-1),
-    HYDRA("Hydra",ItemID.IKKLE_HYDRA_22748,1,-1),
-    GROTESQUE_GUARDIANS("Grotesque Guardians",ItemID.NOON,1,-1),
-    NIGHTMARE("Nightmare",ItemID.LITTLE_NIGHTMARE,1,-1),
-    TZTOK_JAD("TzTok-Jad",ItemID.TZREKJAD,1,-1),
-    TZKAL_ZUK("TzKal-Zuk",ItemID.TZREKZUK,1,-1),
+    ZULRAH("Zulrah",ItemID.PET_SNAKELING_12940,1,-1,0,"Your Zulrah kill count is:"),
+    CHAMBERS("Chambers",ItemID.OLMLET,1,-1,1,"Your completed Chambers of Xeric count is:"),
+    CM_CHAMBERS("CM Chambers",ItemID.TEKTINY,1,-1,1,"Your completed Chambers of Xeric Challenge Mode count is:"),
+    GAUNTLET("Gauntlet",ItemID.YOUNGLLEF,1,-1,1,"Your Gauntlet completion count is:"),
+    CORRUPTED_GAUNTLET("Corrupted Gauntlet",ItemID.CORRUPTED_YOUNGLLEF,1,-1,1,"Your Corrupted Gauntlet completion count is:"),
+    THEATER_OF_BLOOD("Theatre of Blood",ItemID.LIL_ZIK,1,-1,1,"Your completed Theatre of Blood count is:"),
+    VORKATH("Vorkath",ItemID.VORKI,1,-1,0,"Your Vorkath kill count is:"),
+    HYDRA("Alchemical Hydra",ItemID.IKKLE_HYDRA_22748,1,-1,0,"Your Alchemical Hydra kill count is:"),
+    GROTESQUE_GUARDIANS("Grotesque Guardians",ItemID.NOON,1,-1,1,"Your Grotesque Guardians kill count is:"),
+    NIGHTMARE("Nightmare",ItemID.LITTLE_NIGHTMARE,1,-1,0,"Your Nightmare kill count is:"),
+    TZTOK_JAD("TzTok-Jad",ItemID.TZREKJAD,1,-1,0,"Your TzTok-Jad kill count is:"),
+    TZKAL_ZUK("TzKal-Zuk",ItemID.TZREKZUK,1,-1,0,"Your TzKal-Zuk kill count is:"),
 
     //times are in ticks, 120 = 1.2min , 500 = 5min, 200 = 2min, 300 = 3min ect... 100ticks = 1min
 
     //non-display below
-    GIANT_MOLE("Giant Mole",ItemID.BABY_MOLE,0,120),
-    SARACHNIS("Sarachnis",ItemID.SRARACHA,0,120),
-
-
-
-    ABYSSAL_SIRE("Abyssal Sire",ItemID.ABYSSAL_ORPHAN,0,300),
-
-
-
-    COMMANDER_ZILYANA("Commander Zilyana",ItemID.PET_ZILYANA,0,120),
-    GENERAL_GRAARDOR("General Graardor",ItemID.PET_GENERAL_GRAARDOR,0,120),
-    KREEARRA("Kree'arra",ItemID.PET_KREEARRA,0,120),
-    KRIL_TSUTSAROTH("K'ril Tsutsaroth",ItemID.PET_KRIL_TSUTSAROTH,0,120),
-
-    KRAKEN("Kraken",ItemID.PET_KRAKEN,0,120),
-    ENORMOUS_TENTACLE("Enormous Tentacle",ItemID.PET_KRAKEN,0,120),
-
-    THERMY("Thermy",ItemID.PET_SMOKE_DEVIL,0,120),
-    THERMONUCLEAR_SMOKE_DEVIL("Thermonuclear smoke devil",ItemID.PET_SMOKE_DEVIL,0,120),
-
-    CERBERUS("Cerberus",ItemID.HELLPUPPY,0,40),
-
-    KING_BLACK_DRAGON("King Black Dragon",ItemID.PRINCE_BLACK_DRAGON,0,120),
-    SCORPIA("Scorpia",ItemID.SCORPIAS_OFFSPRING,0,120),
-    CHAOS_FANATIC("Chaos Fanatic",ItemID.ANCIENT_STAFF,0,120),
-
-    CALLISTO("Callisto",ItemID.CALLISTO_CUB,0,120),
-
-    CRAZY_ARCHAEOLOGIST("Crazy Archaeologist",ItemID.FEDORA,0,120),
-    CHAOS_ELEMENTAL("Chaos Elemental",ItemID.PET_CHAOS_ELEMENTAL,0,120),
-    VETION("Vet'ion",ItemID.VETION_JR_13180,0,120),
-    VETION_REBORN("Vet'ion Reborn",ItemID.VETION_JR_13180,0,120),
-    VENENATIS("Venenatis",ItemID.VENENATIS_SPIDERLING,0,120),
-
-    BARROWS("Barrows",ItemID.BARROWS_TELEPORT,0,1500),
-    VERAC_THE_DEFILED("Verac the Defiled",ItemID.BARROWS_TELEPORT,0,1500),
-    TORAG_THE_CORRUPTED("Torag the Corrupted",ItemID.BARROWS_TELEPORT,0,1500),
-    KARIL_THE_TAINTED("Karil the Tainted",ItemID.BARROWS_TELEPORT,0,1500),
-    GUTHAN_THE_INFESTED("Guthan the Infested",ItemID.BARROWS_TELEPORT,0,1500),
-    DHAROK_THE_WRETCHED("Dharok the Wretched",ItemID.BARROWS_TELEPORT,0,1500),
-    AHRIM_THE_BLIGHTED("Ahrim the Blighted",ItemID.BARROWS_TELEPORT,0,1500),
-
-    DERANGED_ARCHAEOLOGIST("Deranged Archaeologist",ItemID.UNIDENTIFIED_RARE_FOSSIL,0,120),
-
-    KALPHITE_QUEEN("Kalphite Queen",ItemID.KALPHITE_PRINCESS,0,300),
-    CORPOREAL_BEAST("Corporeal Beast", ItemID.PET_CORPOREAL_CRITTER,0,300),
-
-    DAGANNOTH_PRIME("Dagannoth Prime",ItemID.PET_DAGANNOTH_PRIME,0,15),
-    DAGANNOTH_REX("Dagannoth Rex",ItemID.PET_DAGANNOTH_REX,0,15),
-    DAGANNOTH_SUPREME("Dagannoth Supreme",ItemID.PET_DAGANNOTH_SUPREME,0,15),
-    DAGANNOTH_KINGS("Dagannoth Kings",ItemID.DAGANNOTH,0,15);
+    GIANT_MOLE("Giant Mole",ItemID.BABY_MOLE,0,220,-1,"Your Giant Mole kill count is:"),
+    SARACHNIS("Sarachnis",ItemID.SRARACHA,0,220,-1,"Your Sarachnis kill count is:"),
+    ABYSSAL_SIRE("Abyssal Sire",ItemID.ABYSSAL_ORPHAN,0,300,-1,"not included"),
+    COMMANDER_ZILYANA("Commander Zilyana",ItemID.PET_ZILYANA,0,120,-1,"Your Commander Zilyana kill count is:"),
+    GENERAL_GRAARDOR("General Graardor",ItemID.PET_GENERAL_GRAARDOR,0,120,-1,"Your General Graardor kill count is:"),
+    KREEARRA("Kree'arra",ItemID.PET_KREEARRA,0,120,-1,"Your Kree'arra kill count is:"),
+    KRIL_TSUTSAROTH("K'ril Tsutsaroth",ItemID.PET_KRIL_TSUTSAROTH,0,120,-1,"Your K'ril Tsutsaroth kill count is:"),
+    KRAKEN("Kraken",ItemID.PET_KRAKEN,0,220,-1,"not included"),
+    ENORMOUS_TENTACLE("Enormous Tentacle",ItemID.PET_KRAKEN,0,220,-1,"not included"),
+    THERMY("Thermy",ItemID.PET_SMOKE_DEVIL,0,220,-1,"Your Thermonuclear Smoke Devil kill count is:"),
+    THERMONUCLEAR_SMOKE_DEVIL("Thermonuclear smoke devil",ItemID.PET_SMOKE_DEVIL,0,220,-1,"duplicate identifier"),
+    CERBERUS("Cerberus",ItemID.HELLPUPPY,0,40,-1,"Your Cerberus kill count is:"),
+    KING_BLACK_DRAGON("King Black Dragon",ItemID.PRINCE_BLACK_DRAGON,0,120,-1,"Your King Black Dragon kill count is:"),
+    SCORPIA("Scorpia",ItemID.SCORPIAS_OFFSPRING,0,120,-1,"Your Scorpia kill count is:"),
+    CHAOS_FANATIC("Chaos Fanatic",ItemID.ANCIENT_STAFF,0,120,-1,"Your Chaos Fanatic kill count is:"),
+    CALLISTO("Callisto",ItemID.CALLISTO_CUB,0,120,-1,"Your Callisto kill count is:"),
+    CRAZY_ARCHAEOLOGIST("Crazy Archaeologist",ItemID.FEDORA,0,120,-1,"Your Crazy Archaeologist kill count is:"),
+    CHAOS_ELEMENTAL("Chaos Elemental",ItemID.PET_CHAOS_ELEMENTAL,0,120,-1,"Your Chaos Elemental kill count is:"),
+    VETION("Vet'ion",ItemID.VETION_JR_13180,0,120,-1,"Your Vet'ion kill count is:"),
+    VETION_REBORN("Vet'ion Reborn",ItemID.VETION_JR_13180,0,120,-1,"duplicate identifier"),
+    VENENATIS("Venenatis",ItemID.VENENATIS_SPIDERLING,0,120,-1,"Your Venenatis kill count is:"),
+    BARROWS("Barrows",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
+    VERAC_THE_DEFILED("Verac the Defiled",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
+    TORAG_THE_CORRUPTED("Torag the Corrupted",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
+    KARIL_THE_TAINTED("Karil the Tainted",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
+    GUTHAN_THE_INFESTED("Guthan the Infested",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
+    DHAROK_THE_WRETCHED("Dharok the Wretched",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
+    AHRIM_THE_BLIGHTED("Ahrim the Blighted",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
+    DERANGED_ARCHAEOLOGIST("Deranged Archaeologist",ItemID.UNIDENTIFIED_RARE_FOSSIL,0,120,-1,"Your Deranged Archaeologist kill count is:"),
+    KALPHITE_QUEEN("Kalphite Queen",ItemID.KALPHITE_PRINCESS,0,400,-1,"Your Kalphite Queen kill count is:"),
+    CORPOREAL_BEAST("Corporeal Beast", ItemID.PET_CORPOREAL_CRITTER,0,400,-1,"Your Corporeal Beast kill count is:"),
+    DAGANNOTH_PRIME("Dagannoth Prime",ItemID.PET_DAGANNOTH_PRIME,0,15,-1,"not included"),
+    DAGANNOTH_REX("Dagannoth Rex",ItemID.PET_DAGANNOTH_REX,0,15,-1,"not included"),
+    DAGANNOTH_SUPREME("Dagannoth Supreme",ItemID.PET_DAGANNOTH_SUPREME,0,15,-1,"not included"),
+    DAGANNOTH_KINGS("Dagannoth Kings",ItemID.DAGANNOTH,0,15,-1,"not included");
 
 
     private final int icon;
     private final String name;
+    private final String kcIdentifier;
     private final int displayType;
     private final int attkTimeout;
+    private final int displayFirst;
 
 
-    KphBossInfo(String name, int icon, int displayType, int attkTimeout)
+    KphBossInfo(String name, int icon, int displayType, int attkTimeout,int displayFirst, String kcIdentifier)
     {
         this.icon = icon;
         this.name = name;
         this.displayType = displayType;
         this.attkTimeout = attkTimeout;
+        this.kcIdentifier = kcIdentifier;
+        this.displayFirst = displayFirst;
     }
 
 
@@ -130,12 +119,86 @@ enum KphBossInfo
         bosses = builder.build();
     }
 
+
     public static final Map<String, KphBossInfo> bosses;
+
+    public static final Map<String, String> bossByWords = new HashMap<String, String>();
+
+    static
+    {
+        bossByWords.put("c gauntlet","Corrupted Gauntlet");
+        bossByWords.put("vork","Vorkath");
+
+        //GG's ByWords
+        bossByWords.put("garg boss","Grotesque Guardians");
+        bossByWords.put("dusk","Grotesque Guardians");
+        bossByWords.put("dawn","Grotesque Guardians");
+        bossByWords.put("ggs","Grotesque Guardians");
+
+        bossByWords.put("zuk","TzKal-Zuk");
+        bossByWords.put("jad","TzTok-Jad");
+        bossByWords.put("mole","Giant Mole");
+        bossByWords.put("sire","Abyssal Sire");
+
+        //Sara ByWords
+        bossByWords.put("sara","Commander Zilyana");
+        bossByWords.put("zilly","Commander Zilyana");
+        bossByWords.put("zilyana","Commander Zilyana");
+
+        //Bandos ByWords
+        bossByWords.put("bandos","General Graardor");
+        bossByWords.put("graardor","General Graardor");
+
+        //Arma ByWords
+        bossByWords.put("arma","Kree'arra");
+        bossByWords.put("kree","Kree'arra");
+        bossByWords.put("kreearra","Kree'arra");
+
+        //Zammy ByWords
+        bossByWords.put("zammy","K'ril Tsutsaroth");
+        bossByWords.put("kril","K'ril Tsutsaroth");
+        bossByWords.put("kril tsutsaroth","K'ril Tsutsaroth");
+
+        bossByWords.put("thermonuclear smoke devil","Thermy");
+        bossByWords.put("cerb","Cerberus");
+        bossByWords.put("kbd","King Black Dragon");
+        bossByWords.put("chaos elly","Chaos Elemental");
+        bossByWords.put("vetion","Vet'ion");
+        bossByWords.put("kq","Kalphite Queen");
+        bossByWords.put("corp","Corporeal Beast");
+
+        //CM ByWords
+        bossByWords.put("cm","CM Chambers");
+        bossByWords.put("cm cox","CM Chambers");
+        bossByWords.put("challange mode","CM Chambers");
+        bossByWords.put("challange mode chambers of xeric","CM Chambers");
+
+        //Chambers ByWords
+        bossByWords.put("chambers of xeric","Chambers");
+        bossByWords.put("cox","Chambers");
+
+        //TOB ByWords
+        bossByWords.put("theatre","Theatre of Blood");
+        bossByWords.put("tob","Theatre of Blood");
+
+        bossByWords.put("hydra","Alchemical Hydra");
+    }
+
 
 
     public String getName()
     {
         return name;
+    }
+
+    public String getKcIdentifier()
+    {
+        return kcIdentifier;
+    }
+
+    public int getDisplayFirst()
+    {
+        return displayFirst;
     }
 
     public int getDisplayType()
@@ -157,6 +220,7 @@ enum KphBossInfo
     {
         return bosses.get(name);
     }
+
 
 
 }
