@@ -65,7 +65,7 @@ Alternatively feel free to leave a comment or open an issue on GitHub
 - **General Settings**
 
   - Side Panel-
-  Enables or Disables the side panel (changes take effect when client is restarted)   
+  Enables or Disables the side panel   
   ![Imgur Image](https://i.imgur.com/1grrmmS.png)
     - Actual-
     this is your bossing info clculated with idle time taken into account.
