@@ -99,7 +99,7 @@ Alternatively feel free to leave a comment or open an issue on GitHub
   
   
 - **Side panel demo**
-![Imgur Video](https://i.imgur.com/HK3PKZ6.mp4)
+![Imgur Video](https://i.imgur.com/KXmGvnw.png)(https://i.imgur.com/HK3PKZ6.mp4)
 
 
 
