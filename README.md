@@ -1,4 +1,5 @@
-# KPH Tracker
+# Bossing Info  
+(formerlly KPH Tracker)  
 A simple plugin which tracks your kills per hour at various bossess.  
 
 Please note this plugin is in its first iteration :small_blue_diamond: (Beta) and there is likely to be a bug here and there as its difficult to test all scenarios on every boss. **PLEASE** let me know if you find any bugs, it will be very much appreciated!   
