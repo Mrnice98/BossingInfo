@@ -98,7 +98,7 @@ Alternatively feel free to leave a comment or open an issue on GitHub
   Allows you to choose which DK you want the plugin to track (Kings tracks all three) 
   
   
-- **Side panel demo**
+- **Side panel demo**  
 ![Imgur Image](https://media1.giphy.com/media/q3mUNz44d2CS63EzmG/giphy.gif)
 
 
