@@ -229,6 +229,7 @@ class KphPanel extends PluginPanel {
                 KphBossInfo kphBossInfo = KphBossInfo.find(bossIconFinder.getName());
                 fetchedBossSprite = itemManager.getImage(kphBossInfo.getIcon());
                 fetchedBossName.setText(kphBossInfo.getName());
+                fetchedBossSprite.addTo(fetchedIconLabel);
                 fetchedIconLabel.setVisible(true);
 
                 break;
@@ -246,8 +247,6 @@ class KphPanel extends PluginPanel {
                                                         //if i chan
         fetchedIcon.setBorder(new EmptyBorder(0, 0, 0,offset));
 
-        fetchedBossSprite.addTo(fetchedIconLabel);
-
         updateLookupInfo();
 
 
@@ -255,7 +254,7 @@ class KphPanel extends PluginPanel {
 
     public void updateLookupInfo()
     {
-        if(!fileRW.fetchedFile.exists())
+        if(fileRW.fetchedFile == null || !fileRW.fetchedFile.exists())
         {
             System.out.println("Lookup info set to null");
             setLookupInfoToNull();
