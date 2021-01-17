@@ -99,7 +99,8 @@ Alternatively feel free to leave a comment or open an issue on GitHub
   
   
 - **Side panel demo**
-[![IMAGE ALT TEXT HERE](https://i.imgur.com/KXmGvnw.png)](https://media1.giphy.com/media/q3mUNz44d2CS63EzmG/giphy.gif)
+![Imgur Image](https://media1.giphy.com/media/q3mUNz44d2CS63EzmG/giphy.gif)
+
 
 
 
