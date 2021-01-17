@@ -64,7 +64,7 @@ import java.util.List;
 @PluginDescriptor(
         name = "Bossing Info",
         description = "Tracks statistics such as kills per hour and time bossed at various bosses.",
-        tags = {"PVM", "kills per hour","kph","boss"}
+        tags = {"PVM", "kills per hour","kph","boss","info","boss utilities","boss util","util","utilities","kill times"}
 )
 public class KphPlugin extends Plugin
 {
@@ -221,7 +221,7 @@ public class KphPlugin extends Plugin
                 {
                     clientToolbar.removeNavigation(navButton);
                     navButton = NavigationButton.builder()
-                            .tooltip("KPH Tracker")
+                            .tooltip("Bossing Info")
                             .icon(icon)
                             .priority(config.sidePanelPosition())
                             .panel(panel)
@@ -550,7 +550,7 @@ public class KphPlugin extends Plugin
         panel = (KphPanel) injector.getInstance(KphPanel.class);
         panel.sidePanelInitializer();
         icon = ImageUtil.getResourceStreamFromClass(getClass(), "/icon.png");
-        navButton = NavigationButton.builder().tooltip("KPH Tracker").icon(icon).priority(config.sidePanelPosition()).panel(panel).build();
+        navButton = NavigationButton.builder().tooltip("Bossing Info").icon(icon).priority(config.sidePanelPosition()).panel(panel).build();
         clientToolbar.addNavigation(navButton);
     }
 

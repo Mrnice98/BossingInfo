@@ -479,7 +479,7 @@ class KphPanel extends PluginPanel {
         titlePanel.setLayout(new BorderLayout());
         PluginErrorPanel errorPanel = new PluginErrorPanel();
         errorPanel.setBorder(new EmptyBorder(2, 0, 3, 0));
-        errorPanel.setContent("KPH Tracker", "Tracks your KPH at various bosses");
+        errorPanel.setContent("Bossing Info", "Provides various bossing statistics & utilities");
         titlePanel.add(errorPanel, "Center");
         return titlePanel;
     }
