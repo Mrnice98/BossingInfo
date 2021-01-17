@@ -65,7 +65,7 @@ Alternatively feel free to leave a comment or open an issue on GitHub
 - **General Settings**
 
   - Side Panel-
-  Enables or Disables the side panel (changes take effect when client is restarted)   
+  Enables or Disables the side panel   
   ![Imgur Image](https://i.imgur.com/1grrmmS.png)
     - Actual-
     this is your bossing info clculated with idle time taken into account.
@@ -96,6 +96,15 @@ Alternatively feel free to leave a comment or open an issue on GitHub
 
   - Dagannoth Selector-   
   Allows you to choose which DK you want the plugin to track (Kings tracks all three) 
+  
+  
+- **Side panel demo**  
+![Imgur Image](https://media1.giphy.com/media/q3mUNz44d2CS63EzmG/giphy.gif)
+
+
+
+
+
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -123,6 +132,12 @@ Alternatively feel free to leave a comment or open an issue on GitHub
     - Pause and resume are now one button.
     - Add button to switch between virtual and actual calculation info.
     - Add auto pause upon log out
+    - numerous backend changes to better optimize code 
+    
+- **Version 1.4**   
+    - Add boss-info logging.
+    - Add boss-info lookup panel, allows you to check your boss info overtime.
+    - Revamp of the kcIdentification system. 
     - numerous backend changes to better optimize code 
     
 
