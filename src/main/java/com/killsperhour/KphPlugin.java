@@ -62,9 +62,9 @@ import java.util.List;
 
 
 @PluginDescriptor(
-        name = "KPH Tracker",
-        description = "Shows various things like Kills per hour for the boss you are killing",
-        tags = {"PVM", "kills per hour"}
+        name = "Bossing Info",
+        description = "Tracks statistics such as kills per hour and time bossed at various bosses.",
+        tags = {"PVM", "kills per hour","kph","boss"}
 )
 public class KphPlugin extends Plugin
 {
