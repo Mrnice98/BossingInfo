@@ -275,103 +275,141 @@ public class KphPlugin extends Plugin
            sessionPause();
        }
 
-
-       //this is to make sure garg boss times are gathered correctly
-       if(gameStateChanged.getGameState() == GameState.LOADING)
-       {
-           int[] currentRegions = client.getMapRegions();
-           if(Arrays.equals(currentRegions,gargBossRegion) && client.isInInstancedRegion() && sessionNpc != null)
-           {
-               if(!sessionNpc.equals("Grotesque Guardians"))
-               {
-                   sessionEnd();
-               }
-           }
-       }
     }
 
 
 
     @Subscribe
-    public void onChatMessage(ChatMessage chatMessage)
-    {
+    public void onChatMessage(ChatMessage chatMessage) {
         Player player = client.getLocalPlayer();
         assert player != null;
 
-        //stops plugin from reading chat when paused
-        if(paused)
-        {
-            return;
-        }
         //this delay is needed as if a player hops worlds, the chat is reloaded and the kills per session would 2x if not for the delay to stop the plugin from reading them.
         //if there is a command like !end in the chat that will still be read
-        if(delayTicks < 5)
-        {
+        if (delayTicks < 5) {
             return;
         }
-        if (chatMessage.getType() == ChatMessageType.GAMEMESSAGE || chatMessage.getType() == ChatMessageType.FRIENDSCHATNOTIFICATION || chatMessage.getType() == ChatMessageType.SPAM)
-        {
+        if (chatMessage.getType() == ChatMessageType.GAMEMESSAGE || chatMessage.getType() == ChatMessageType.FRIENDSCHATNOTIFICATION || chatMessage.getType() == ChatMessageType.SPAM) {
             canRun = false;
             this.message = chatMessage.getMessage();
-            integrityCheck();
+
+            chatMessageFilter();
+
             sMethods.sireTimeClac();
+            //stops plugin from reading chat when paused
+            if (paused) {
+                return;
+            }
             bossKc();
             bossKillTime();
-            calcKillsPerHour();
+
+            chatMessageQueue();
         }
     }
+
+
+
+    String kcMessage;
+    String timeMessage;
+    public void chatMessageQueue()
+    {
+        if(kcMessage != null && timeMessage != null)
+        {
+            canRun = true;
+            chatDisplayBossMethod(currentBossName);
+            chatDisplayKillTimeGetter();
+            calcKillsPerHour();
+
+            kcMessage = null;
+            timeMessage = null;
+        }
+
+    }
+
+
+    boolean autoResumed;
+
+    public void chatMessageFilter()
+    {
+        if(paused)
+        {
+            for (KphBossInfo bossIdentifier : KphBossInfo.values())
+            {
+                if (message.contains(bossIdentifier.getKcIdentifier()))
+                {
+                    sessionResume();
+                    autoResumed = true;
+                    break;
+                }
+
+            }
+
+            for (String message : KphBossInfo.timeMessages)
+            {
+                if (this.message.contains(message))
+                {
+                    sessionResume();
+                    autoResumed = true;
+                    break;
+                }
+
+            }
+
+        }
+
+    }
+
 
 
     //private final List<String> noDisplayBosses = Arrays.asList("Giant Mole", "the nightmare");
     @Subscribe
     public void onHitsplatApplied(HitsplatApplied hitsplatApplied)
     {
-        if (!paused)
+        if (hitsplatApplied.getActor() instanceof NPC)
         {
-            if (hitsplatApplied.getActor() instanceof NPC)
+            NPC npc = (NPC)hitsplatApplied.getActor();
+
+            if(hitsplatApplied.getHitsplat().isMine())
             {
-                NPC npc = (NPC)hitsplatApplied.getActor();
-                if(hitsplatApplied.getHitsplat().isMine())
+                lastAttackedBoss = npc;
+                System.out.println(lastAttackedBoss.getName());
+
+                KphBossInfo kphBossInfo = KphBossInfo.find(lastAttackedBoss.getName()); //this should work
+
+                if(kphBossInfo != null && kphBossInfo.getDisplayType() == 0)
                 {
-                    lastAttackedBoss = npc;
+                    //test stuff,
+                    lastAttkTimeout = 0;
+                    lastValidBoss = lastAttackedBoss;
 
-                    KphBossInfo kphBossInfo = KphBossInfo.find(lastAttackedBoss.getName()); //this should work
+                    sMethods.dagTimeClac();
 
-                    if(kphBossInfo != null && kphBossInfo.getDisplayType() == 0)
+                    attkCount++;
+                    if (attkCount == 1)
                     {
-                         //test stuff,
-                        lastAttkTimeout = 0;
+                        currentNPC = lastValidBoss;
 
-                        lastValidBoss = lastAttackedBoss;
-                        //includes a param which resets their attk timeout if they are the one being hit
-                        sMethods.dagTimeClac();
-                        attkCount++;
-                        if (attkCount == 1)
+                        setAttkTimeout();
+
+                        setKillTimeStart();
+                    }
+
+
+                    if (currentNPC.getName() != null && lastValidBoss.getName() != null)
+                    {
+                        if(!currentNPC.getName().equals(lastValidBoss.getName()) && lastValidBoss.getId() != NpcID.VETION_REBORN)
                         {
-                            currentNPC = lastValidBoss;
-
-                            setAttkTimeout();
-
+                            attkCount = 1;
                             setKillTimeStart();
-                        }
-
-
-                        if (currentNPC.getName() != null && lastValidBoss.getName() != null)
-                        {
-                            if(!currentNPC.getName().equals(lastValidBoss.getName()) && lastValidBoss.getId() != NpcID.VETION_REBORN)
-                            {
-                                attkCount = 1;
-                                setKillTimeStart();
-                                currentNPC = lastValidBoss;
-
-                                setAttkTimeout();
-                            }
+                            currentNPC = lastValidBoss;
+                            setAttkTimeout();
                         }
                     }
                 }
             }
         }
     }
+
 
 
     public void setKillTimeStart()
@@ -462,7 +500,6 @@ public class KphPlugin extends Plugin
         ticks++;
         bossKilled();
 
-
         if(attkCount > 0 || timesAreNotNull())
         {
             lastAttkTimeout++; //test stuff
@@ -484,6 +521,8 @@ public class KphPlugin extends Plugin
         }
 
     }
+
+
 
 
     public boolean timesAreNotNull()
@@ -569,31 +608,22 @@ public class KphPlugin extends Plugin
     //gets the killtime of the last kill as displayed in the chat and if selected calls for the banking time to be calculated
     public int bossKillTime()
     {
-
         //FIGHT DURATION CHAT IDENTIFIER, FOR BOSSESS WHO OUTPUT IN THAT FORMAT.
         if(message.contains("Fight duration:"))
         {
-
-            canRun = true;
-            //the "Grotesque Guardians" is the only boss which outputs time before kill count and also uses fight duration
-            //therefore we want Fight duration to act normally if not kill GG's
-            int[] currentRegions = client.getMapRegions();
-            if(Arrays.equals(currentRegions,gargBossRegion) && client.isInInstancedRegion())
-            {
-                canRun = false;
-                displayFirstIncrementerAndInitializer();
-            }
-            return chatDisplayKillTimeGetter();
+            timeMessage = message;
+            return 0;
         }
 
         if(message.contains("Duration:"))
         {
             if(Arrays.equals(client.getMapRegions(), fightCaveRegion) || Arrays.equals(client.getMapRegions(), infernoRegion))
             {
-                canRun = true;
                 //for some reason the timers plugin does not like when i run this as a test, i think its bc im still inside the cave not sure
+                timeMessage = message;
+
                 System.out.println("fight caves/inferno");
-                return chatDisplayKillTimeGetter();
+                return 0;
             }
         }
 
@@ -602,27 +632,30 @@ public class KphPlugin extends Plugin
         if(message.contains("Congratulations - your raid is complete!"))
         {
             message = message.substring(message.indexOf("Duration:</col>") + 15);
-            displayFirstIncrementerAndInitializer();
-            return chatDisplayKillTimeGetter();
+
+            timeMessage = message;
+            return 0;
         }
 
         if(message.contains("Corrupted challenge duration:"))
         {
-            displayFirstIncrementerAndInitializer();
-            return chatDisplayKillTimeGetter();
+
+            timeMessage = message;
+            return 0;
         }
 
         if(message.contains("Challenge duration:"))
         {
-            displayFirstIncrementerAndInitializer();
-            return chatDisplayKillTimeGetter();
+            timeMessage = message;
+            return 0;
         }
 
         if(message.contains("Theatre of Blood total completion time: "))
         {
             message = message.substring(message.indexOf("time: ") + 5);
-            displayFirstIncrementerAndInitializer();
-            return chatDisplayKillTimeGetter();
+
+            timeMessage = message;
+            return 0;
         }
 
 
@@ -633,18 +666,6 @@ public class KphPlugin extends Plugin
 
     }
 
-    //Increments the kill count for display first bosses and initializes the session if kills = 1. This is for bosses who display time first then KC.
-    public void displayFirstIncrementerAndInitializer()
-    {
-        killsThisSession++;
-        if(killsThisSession == 1)
-        {
-            sessionInitializer();
-        }
-    }
-
-
-
 
 //END OF SECTION
 //##########################################################################################################################################
@@ -652,18 +673,10 @@ public class KphPlugin extends Plugin
 
     public void chatDisplayBossMethod(String bossName)
     {
-        KphBossInfo kphBossInfo = KphBossInfo.find(bossName);
-
         updateSessionInfoCache();
 
-        if(kphBossInfo.getDisplayFirst() == 1)
-        {
-            canRun = true;
-        }
-        else
-        {
-            killsThisSession++;
-        }
+        canRun = true;
+        killsThisSession++;
 
         if(killsThisSession == 1)
         {
@@ -688,10 +701,15 @@ public class KphPlugin extends Plugin
         }
 
         currentBoss = bossName;
+        //clears times for special bosses
+        conditionalTimeClear();
         killCount = getKillCount();
         noDisplayKillTimeGetter();
         sessionChecker();
         canRun = true;
+
+        timeMessage = null;
+        kcMessage = null;
     }
 
 
@@ -701,6 +719,8 @@ public class KphPlugin extends Plugin
 
     //CHAT DISPLAY BOSSES LISTED BELOW
     //keeps track of the kills done during the session and calls the session checker to make sure the session is still valid
+
+    String currentBossName;
 
     public void bossKc()
     {
@@ -712,11 +732,13 @@ public class KphPlugin extends Plugin
             {
                 if(bossIdentifier.getDisplayType() == 1)
                 {
-                    chatDisplayBossMethod(bossIdentifier.getName());
+                    kcMessage = message;
+                    currentBossName = bossIdentifier.getName();
                 }
                 else
                 {
                     nonChatDisplayBossMethod(bossIdentifier.getName());
+                    calcKillsPerHour();
                 }
 
                 break;
@@ -728,76 +750,6 @@ public class KphPlugin extends Plugin
 //------------------------------------------------NON-DISPLAY BOSSES BELOW----------------------------------------------------------------------
 
         //Special case bosses
-
-        //ABYSSAL SIRE BOSS IDENTIFIER
-        if(message.contains("Your Abyssal Sire kill count is:"))
-        {
-            updateSessionInfoCache();
-
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionNpc = "Abyssal Sire";
-                sessionInitializer();
-                firstKillTime = generalTimer(killTimerStart);
-            }
-
-            currentBoss = "Abyssal Sire";
-            sMethods.sireTimeClear();
-            killCount = getKillCount();
-            noDisplayKillTimeGetter();
-            sessionChecker();
-            canRun = true;
-        }
-
-
-        //Kraken
-        if(message.contains("Your Kraken kill count is:"))
-        {
-            updateSessionInfoCache();
-
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionNpc = "Kraken";
-                sessionInitializer();
-                firstKillTime = generalTimer(killTimerStart);
-            }
-
-            currentBoss = "Kraken";
-            sMethods.krakenTimeClear();
-            killCount = getKillCount();
-            noDisplayKillTimeGetter();
-            sessionChecker();
-            canRun = true;
-        }
-
-
-
-
-        //Barrows
-        if(message.contains("Your Barrows chest count is:"))
-        {
-            updateSessionInfoCache();
-
-            killsThisSession++;
-            if(killsThisSession == 1)
-            {
-                sessionNpc = "Barrows";
-                sessionInitializer();
-                firstKillTime = generalTimer(killTimerStart);
-            }
-
-            currentBoss = "Barrows";
-            sMethods.barrowsTimeClear();
-            killCount = getKillCount();
-            noDisplayKillTimeGetter();
-            sessionChecker();
-            canRun = true;
-
-
-        }
-
 
         //Daggonoth kings
         if((message.contains(rexMessage) || message.contains(primeMessage) || message.contains(supremeMessage)) && config.dksSelector() == KphConfig.DksSelector.Kings
@@ -823,6 +775,24 @@ public class KphPlugin extends Plugin
             canRun = true;
         }
 
+    }
+
+    private void conditionalTimeClear()
+    {
+        switch (currentBoss)
+        {
+            case "Barrows":
+                sMethods.barrowsTimeClear();
+                break;
+
+            case "Kraken":
+                sMethods.krakenTimeClear();
+                break;
+
+            case "Abyssal Sire":
+                sMethods.sireTimeClear();
+                break;
+        }
     }
 
 
@@ -861,49 +831,6 @@ public class KphPlugin extends Plugin
         {
             sessionReset();
         }
-    }
-
-    //these are needed for bossess who output the time first in chat then there kc, without this times could get messed up when switching sessions
-    public void integrityCheck()
-    {
-        //Guantlet check
-        int[] currentRegions;
-        if(message.contains("Time remaining:") && sessionNpc != null && client.isInInstancedRegion())
-        {
-            currentRegions = client.getMapRegions();
-            if (!sessionNpc.equals("Gauntlet") && Arrays.equals(regGauntletRegion, currentRegions))
-            {
-                sessionEnd();
-            }
-            else if(!sessionNpc.equals("Corrupted Gauntlet") && Arrays.equals(cGauntletRegion, currentRegions))
-            {
-                sessionEnd();
-            }
-        }
-
-        //Chambers check
-        if(message.contains("The raid has begun!") && sessionNpc != null && client.getPlane() == 3)
-        {
-            currentRegions = client.getMapRegions();
-            if (!sessionNpc.equals("CM Chambers") && Arrays.equals(cmRegions, currentRegions))
-            {
-                sessionEnd();
-            }
-            else if(!sessionNpc.equals("Chambers") && !Arrays.equals(cmRegions, currentRegions))
-            {
-                sessionEnd();
-            }
-        }
-
-        //Theater check
-        if(message.contains("Wave 'The Maiden of Sugadinti' complete! Duration:") && sessionNpc != null && client.isInInstancedRegion())
-        {
-            if (!sessionNpc.equals("Theater"))
-            {
-                sessionEnd();
-            }
-        }
-
     }
 
 
@@ -1256,7 +1183,7 @@ public class KphPlugin extends Plugin
         String seconds;
         String hours = "0";
 
-        String trimmedMessage = message.replaceFirst("<","");
+        String trimmedMessage = timeMessage.replaceFirst("<","");
         int startOfTime = trimmedMessage.indexOf(">");
         int lastOfTime = trimmedMessage.indexOf("<");
         String sub = trimmedMessage.substring(startOfTime + 1, lastOfTime);
@@ -1284,6 +1211,15 @@ public class KphPlugin extends Plugin
 
     public int getKillCount()
     {
+        KphBossInfo kphBossInfo = KphBossInfo.find(currentBoss);
+        String message = this.message;
+
+        if(kphBossInfo.getDisplayType() == 1)
+        {
+            message = kcMessage;
+        }
+
+
         String trimmedMessage = message.replace("<col=ff0000>","");
         trimmedMessage =  trimmedMessage.replaceAll("[^0-9]", "");
         return Integer.parseInt(trimmedMessage);
@@ -1319,9 +1255,10 @@ public class KphPlugin extends Plugin
         currentKill = getKillTime();
         fastestKill();
 
-        if(killsThisSession == 1)
+        if(killsThisSession == 1 || autoResumed)
         {
-            timerOffset = getKillTime();
+            timerOffset += getKillTime();
+            autoResumed = false;
         }
         totalTime = (generalTimer(startTime) + timerOffset) - pauseTime;
 
@@ -1336,6 +1273,12 @@ public class KphPlugin extends Plugin
     {
 
         totalKillTime += generalTimer(killTimerStart);
+
+        if(autoResumed && killsThisSession != 1)
+        {
+            firstKillTime += generalTimer(killTimerStart);
+            autoResumed = false;
+        }
 
         totalTime = (generalTimer(startTime) + firstKillTime) - pauseTime;
 

@@ -27,6 +27,7 @@ package com.killsperhour;
 import com.google.common.collect.ImmutableMap;
 import net.runelite.api.ItemID;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,12 +54,12 @@ enum KphBossInfo
     //non-display below
     GIANT_MOLE("Giant Mole",ItemID.BABY_MOLE,0,220,-1,"Your Giant Mole kill count is:"),
     SARACHNIS("Sarachnis",ItemID.SRARACHA,0,220,-1,"Your Sarachnis kill count is:"),
-    ABYSSAL_SIRE("Abyssal Sire",ItemID.ABYSSAL_ORPHAN,0,300,-1,"not included"),
+    ABYSSAL_SIRE("Abyssal Sire",ItemID.ABYSSAL_ORPHAN,0,300,-1,"Your Abyssal Sire kill count is:"),
     COMMANDER_ZILYANA("Commander Zilyana",ItemID.PET_ZILYANA,0,120,-1,"Your Commander Zilyana kill count is:"),
     GENERAL_GRAARDOR("General Graardor",ItemID.PET_GENERAL_GRAARDOR,0,120,-1,"Your General Graardor kill count is:"),
     KREEARRA("Kree'arra",ItemID.PET_KREEARRA,0,120,-1,"Your Kree'arra kill count is:"),
     KRIL_TSUTSAROTH("K'ril Tsutsaroth",ItemID.PET_KRIL_TSUTSAROTH,0,120,-1,"Your K'ril Tsutsaroth kill count is:"),
-    KRAKEN("Kraken",ItemID.PET_KRAKEN,0,220,-1,"not included"),
+    KRAKEN("Kraken",ItemID.PET_KRAKEN,0,220,-1,"Your Kraken kill count is:"),
     ENORMOUS_TENTACLE("Enormous Tentacle",ItemID.PET_KRAKEN,0,220,-1,"not included"),
     THERMY("Thermy",ItemID.PET_SMOKE_DEVIL,0,220,-1,"Your Thermonuclear Smoke Devil kill count is:"),
     THERMONUCLEAR_SMOKE_DEVIL("Thermonuclear smoke devil",ItemID.PET_SMOKE_DEVIL,0,220,-1,"duplicate identifier"),
@@ -72,7 +73,7 @@ enum KphBossInfo
     VETION("Vet'ion",ItemID.VETION_JR_13180,0,120,-1,"Your Vet'ion kill count is:"),
     VETION_REBORN("Vet'ion Reborn",ItemID.VETION_JR_13180,0,120,-1,"duplicate identifier"),
     VENENATIS("Venenatis",ItemID.VENENATIS_SPIDERLING,0,120,-1,"Your Venenatis kill count is:"),
-    BARROWS("Barrows",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
+    BARROWS("Barrows",ItemID.BARROWS_TELEPORT,0,1500,-1,"Your Barrows chest count is:"),
     VERAC_THE_DEFILED("Verac the Defiled",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
     TORAG_THE_CORRUPTED("Torag the Corrupted",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
     KARIL_THE_TAINTED("Karil the Tainted",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
@@ -123,6 +124,19 @@ enum KphBossInfo
     public static final Map<String, KphBossInfo> bosses;
 
     public static final Map<String, String> bossByWords = new HashMap<String, String>();
+
+    public static final ArrayList<String> timeMessages = new ArrayList<String>();
+
+    static
+    {
+        //duration is not necessary as duration will never come first, fight duration comes first for garg boss.
+        timeMessages.add("Fight duration:");
+        timeMessages.add("Congratulations - your raid is complete!");
+        timeMessages.add("Corrupted challenge duration:");
+        timeMessages.add("Challenge duration:");
+        timeMessages.add("Theatre of Blood total completion time: ");
+
+    }
 
     static
     {
