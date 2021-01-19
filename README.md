@@ -17,9 +17,9 @@ Alternatively feel free to leave a comment or open an issue on GitHub
 - Currently the plugin has full support for the following bosses:  
   `Zulrah`   `Vorkath`   `Nightmare`   `Theater of Blood`   `Chambers of Xeric & CM`   `Alchemical Hydra`   `Grotesque Guardians`   `The Gauntlet & Corrupted`   `TzTok-Jad`    `Thermonuclear smoke devil`  `Cerberus`   `Chaos Fanatic`   `Crazy archaeologist`   `Scorpia`   `King Black Dragon`  `Chaos Elemental`  `Venenatis`   `Callisto`  `Giant Mole`   `Dagannoth Kings`   `Sarachnis`   `Kalphite Queen`   `Kree'arra`   `Commander Zilyana`   `General Graardor`   `K'ril   Tsutsaroth`   `Corporeal Beast` `Kraken`  `Abyssal Sire`  `Vet'ion`  `Barrows`  
   
-- Newly added:  
-  `Kraken`  `Abyssal Sire`  `Vet'ion`  `Barrows`  
-     **These bosses are newly added and may not work perfectly*  
+- Special Bosses:  
+  `Vet'ion`  `Barrows`  `Dagannoth Kings`  
+     **These bosses use special mechanics and may not work perfectly*  
        
 - Currently The plugin does not have support for:  
  `Wintertodt`   `Zalcano`   `Penance Queen`
@@ -140,6 +140,13 @@ Alternatively feel free to leave a comment or open an issue on GitHub
     - Add boss-info lookup panel, allows you to check your boss info overtime.
     - Revamp of the kcIdentification system. 
     - numerous backend changes to better optimize code 
+    
+- **Version 1.4.5**   
+    - ADDED auto resume on next kill when plugin is paused
+    - Revamp how sessions are switched
+    - Remove integrity checker (not needed anymore)
+    
+    
     
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
