@@ -76,9 +76,9 @@ Alternatively feel free to leave a comment or open an issue on GitHub
   Enables displaying your boss goals relative to your kc Ex.(if your start kc and end kc are 100 kills apart it will show 0 as your start and 100 as your end)  
   
   - Boss Goals Top-  
-  Lets your choose what to display on the top line of the on screen boss goals overaly  
+  Lets your choose what to display on the top line of the on screen boss goals overaly    
 
- - Boss Goals Bottom-  
+  - Boss Goals Bottom-  
   Lets your choose what to display on the Bottom line of the on screen boss goals overaly  
 
     
