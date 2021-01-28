@@ -65,6 +65,9 @@ Alternatively feel free to leave a comment or open an issue on GitHub
   
 - **Boss Goals Settings**
 
+  To set a Boss Goal right click on the Boss Goals side panel and set a goal.  
+  To disable or reset a Boss Goal, right click on the Boss Goals side panel and reset Boss Goal.
+
   - Display Boss Goals Overlay-  
   Enables the on-screen overlay for your boss goals.                                         
   ![Imgur Image](https://i.imgur.com/y360q7x.png)
