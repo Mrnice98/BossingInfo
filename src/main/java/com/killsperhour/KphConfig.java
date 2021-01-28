@@ -42,12 +42,22 @@ public interface KphConfig extends Config
     String displaySection = "Display Options";
 
     @ConfigSection(
+            name = "Boss Goals Settings",
+            description = "Boss Goals Settings",
+            position = 1,
+            closedByDefault = true
+    )
+    String bossGoalsSettings = "Boss Goals Settings";
+
+    @ConfigSection(
             name = "General Settings",
             description = "General Settings",
-            position = 1,
+            position = 2,
             closedByDefault = false
     )
     String generalSettings = "General Settings";
+
+
 
 
 
@@ -118,6 +128,78 @@ public interface KphConfig extends Config
             section = displaySection
     )
     default boolean displayIdleTime() { return true; }
+
+
+
+//#######################################################################################################################
+
+
+//                                        BOSS GOALS SECTION
+//#######################################################################################################################
+
+
+    @ConfigItem(
+            position = 5,
+            keyName = "Display Boss Goals Panel",
+            name = "Display Boss Goals Panel",
+            description = "Display Boss Goals Panel",
+            section = bossGoalsSettings
+    )
+    default boolean displayBossGoalsPanel() { return true; }
+
+    @ConfigItem(
+            position = 5,
+            keyName = "Display Boss Goals Overlay",
+            name = "Display Boss Goals Overlay",
+            description = "Display Boss Goals Overlay",
+            section = bossGoalsSettings
+    )
+    default boolean displayBossGoalsOverlay() { return true; }
+
+    @ConfigItem(
+            position = 6,
+            keyName = "Display relative kills",
+            name = "Display relative kills",
+            description = "Displays your Boss Goals as relative kills",
+            section = bossGoalsSettings
+    )
+    default boolean displayRelativeKills() { return true; }
+
+
+    enum TopGoalOverlay
+    {
+        KILLS_DONE,
+        KILLS_LEFT,
+        KPH,
+        TTG,
+    }
+
+    @ConfigItem(
+            position = 7,
+            keyName = "Boss Goals Top",
+            name = "Boss Goals Top",
+            description = "What the top row on overlay will show",
+            section = bossGoalsSettings
+    )
+    default TopGoalOverlay topGoalOverlay() { return TopGoalOverlay.KPH; }
+
+
+    enum BottomGoalOverlay
+    {
+        KILLS_DONE,
+        KILLS_LEFT,
+        KPH,
+        TTG,
+    }
+
+    @ConfigItem(
+            position = 8,
+            keyName = "Boss Goals Bottom",
+            name = "Boss Goals Bottom",
+            description = "What the bottom row on overlay will show",
+            section = bossGoalsSettings
+    )
+    default BottomGoalOverlay bottomGoalOverlay() { return BottomGoalOverlay.TTG; }
 
 //#######################################################################################################################
 

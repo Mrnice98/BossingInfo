@@ -38,19 +38,17 @@ class KphOverlay extends Overlay
 {
     private final Client client;
     private final KphConfig config;
-    private final KphPanel panel;
     private final KphPlugin kphPlugin;
     private final PanelComponent panelComponent = new PanelComponent();
 
 
     @Inject
-    private KphOverlay(Client client, KphConfig config, KphPlugin kphPlugin, KphPanel panel)
+    private KphOverlay(Client client, KphConfig config, KphPlugin kphPlugin)
     {
         setPosition(OverlayPosition.ABOVE_CHATBOX_RIGHT);
         this.client = client;
         this.config = config;
         this.kphPlugin = kphPlugin;
-        this.panel = panel;
     }
 
 
@@ -121,6 +119,7 @@ class KphOverlay extends Overlay
                     .left("Idle Time:")
                     .right((kphPlugin.timeConverter(kphPlugin.timeSpentIdle)))
                     .build());
+
         }
 
 

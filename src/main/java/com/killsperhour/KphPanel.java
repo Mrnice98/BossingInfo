@@ -25,11 +25,15 @@
 package com.killsperhour;
 
 
+import net.runelite.api.ItemID;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.PluginErrorPanel;
+import net.runelite.client.ui.components.ProgressBar;
 import net.runelite.client.util.AsyncBufferedImage;
+import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.SwingUtil;
 
@@ -44,8 +48,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.text.DecimalFormat;
 
 class KphPanel extends PluginPanel {
+
+    private static final String HTML_LABEL_TEMPLATE = "<html><body style='color:%s'>%s<span style='color:white'>%s</span></body></html>";
 
     private final JTextField searchField = new JTextField();
 
@@ -55,26 +62,33 @@ class KphPanel extends PluginPanel {
     private final JLabel actualTotalAverageKillTime = new JLabel();
     private final JLabel actualTotalKph = new JLabel();
     private final JLabel overallFastestKill = new JLabel();
-    private final JLabel sessionTimeLabel = new JLabel("Session Time: N/A");
-    private final JLabel totalBossKillsLabel = new JLabel("Kills: N/A");
-    private final JLabel averageKillTimeLabel = new JLabel("Average Kill: N/A");
-    private final JLabel fastestKillTimeLabel = new JLabel("Fastest Kill: N/A");
-    private final JLabel killsPerHourLabel = new JLabel("KPH: N/A");
-    private final JLabel idleTimeLabel = new JLabel("Idle Time: N/A");
+    private final JLabel sessionTimeLabel = new JLabel(htmlLabel("Session Time: ","N/A"));
+    private final JLabel totalBossKillsLabel = new JLabel(htmlLabel("Kills: ","N/A"));
+    private final JLabel averageKillTimeLabel = new JLabel(htmlLabel("Average Kill: ", "N/A"));
+    private final JLabel fastestKillTimeLabel = new JLabel(htmlLabel("Fastest Kill: ","N/A"));
+    private final JLabel killsPerHourLabel = new JLabel(htmlLabel("KPH: ","N/A"));
+    private final JLabel idleTimeLabel = new JLabel(htmlLabel("Idle Time: ","N/A"));
     private final JLabel fetchedBossName = new JLabel("Unknown Boss");
-    private final JLabel fetchedTotalTimeActual = new JLabel("Total Session Time: N/A");
-    private final JLabel fetchedTotalTimeVirtual = new JLabel("Total Boss Time: N/A");
-    private final JLabel fetchedTotalTrackedKills = new JLabel("Tracked Kills: N/A");
-    private final JLabel fetchedFastestKill = new JLabel("Fastest Kill: N/A");
-    private final JLabel fetchedKillsPerHour = new JLabel("KPH: N/A");
-    private final JLabel fetchedTotalBossKc = new JLabel("Total KC: N/A");
-    private final JLabel fetchedAverageKillTime = new JLabel("Average Kill: N/A");
-    private final JLabel estimatedTimeSpentBossing = new JLabel("EST Bossing Time: N/A");
+    private final JLabel fetchedTotalTimeActual = new JLabel(htmlLabel("Total Session Time: ",  "N/A"));
+    private final JLabel fetchedTotalTimeVirtual = new JLabel(htmlLabel("Total Boss Time: ","N/A"));
+    private final JLabel fetchedTotalTrackedKills = new JLabel(htmlLabel("Tracked Kills: ","N/A"));
+    private final JLabel fetchedFastestKill = new JLabel(htmlLabel("Fastest Kill: ","N/A"));
+    private final JLabel fetchedKillsPerHour = new JLabel(htmlLabel("KPH: ", "N/A"));
+    private final JLabel fetchedTotalBossKc = new JLabel(htmlLabel("Total KC: ","N/A"));
+    private final JLabel fetchedAverageKillTime = new JLabel(htmlLabel("Average Kill: ","N/A"));
+    private final JLabel estimatedTimeSpentBossing = new JLabel(htmlLabel("EST Bossing Time: ", "N/A"));
     private final JLabel lookupHeaderTitle = new JLabel("Boss Info Lookup");
     private final JLabel searchIcon = new JLabel(SEARCH_ICON);
     private final JLabel picLabel = new JLabel();
     private final JLabel fetchedIconLabel = new JLabel();
-    JLabel currentBossNameLabel = new JLabel("Unknown Boss Name");
+    private final JLabel startKcLabel = new JLabel("Start KC:");
+    private final JLabel endKcLabel = new JLabel("End KC:");
+    private final JLabel bossGoalsKphLabel = new JLabel(htmlLabel("KPH: ","N/A"));
+    private final JLabel killsDoneLabel = new JLabel(htmlLabel("Kills Done: ","N/A"));
+    private final JLabel killsLeftLabel = new JLabel(htmlLabel("Kills Left: ", "N/A"));
+    private final JLabel timeToGoalLabel = new JLabel(htmlLabel("TTG: ", "N/A"));
+    private final JLabel bossGoalsIconLabel = new JLabel();
+                  JLabel currentBossNameLabel = new JLabel("Unknown Boss Name");
 
     private final JPanel lookupPanelHeaderContents = new JPanel();
     private final JPanel historicalInfoSection = new JPanel(new GridBagLayout());
@@ -91,14 +105,26 @@ class KphPanel extends PluginPanel {
     private final JPanel pauseAndResumeButtons;
     private final JPanel sessionEndButton;
     private final JPanel supportButtons;
+    private final JPanel bossGoalsInputPanel = new JPanel();
+    private final JPanel goalInfoPanel = new JPanel();
+    private final JPanel goalInfoPanel2 = new JPanel();
+    private final JPanel progressBarPanel = new JPanel(new BorderLayout());
+            final JPanel bossGoalsPanel;
 
     private final JToggleButton dropdownButton = new JToggleButton();
     private final JButton closeButton = new JButton(CLOSE_ICON);
     private final JButton trashButton = new JButton(TRASH_ICON);
     private final JButton searchButton = new JButton();
-    JButton pauseResumeButton = new JButton();
-    JButton switchModeButton = new JButton();
+                  JButton pauseResumeButton = new JButton();
+                  JButton switchModeButton = new JButton();
 
+    final SpinnerNumberModel startKcModel = new SpinnerNumberModel(0, 0, 10000000, 1);
+    final SpinnerNumberModel endKcModel = new SpinnerNumberModel(0, 0, 10000000, 1);
+
+    private final JSpinner startKcSpinner = new JSpinner(startKcModel);
+    private final JSpinner endKcSpinner = new JSpinner(endKcModel);
+
+    final ProgressBar progressBar = new ProgressBar();
 
     private static final ImageIcon TRASH_ICON;
     private static final ImageIcon TRASH_ICON_HOVER;
@@ -123,8 +149,11 @@ class KphPanel extends PluginPanel {
 
     private final FileReadWriter fileRW;
 
+    private KphBossGoalsOverlay goalsOverlay;
+
     @Inject
     private ItemManager itemManager;
+
 
     @Inject
     KphPanel(KphPlugin plugin, KphConfig config, FileReadWriter fileRW)
@@ -141,7 +170,12 @@ class KphPanel extends PluginPanel {
         this.historicalInfoPanel = new JPanel();
         this.lookupInfoPanelHeader = new JPanel();
         this.buttonIconTab = new JPanel();
+
+        this.bossGoalsPanel = new JPanel();
+
         this.icon = new JPanel();
+
+
         this.plugin = plugin;
         this.config = config;
         this.fileRW = fileRW;
@@ -155,6 +189,7 @@ class KphPanel extends PluginPanel {
         this.sidePanel.add(this.buildTitlePanel());
         this.sidePanel.add(Box.createRigidArea(new Dimension(0, 5)));
         this.sidePanel.add(this.buildBossInfoPanel());
+        this.sidePanel.add(this.buildBossGoalsPanel());
         this.sidePanel.add(this.buildButtonIconTab());
         this.sidePanel.add(this.buildPauseAndResumebuttons());
         this.sidePanel.add(this.buildSessionEndButton());
@@ -165,8 +200,226 @@ class KphPanel extends PluginPanel {
         buildlookupInfoPanelHeader();
         buildHistoricalInfoPanel();
 
+        if(!config.displayBossGoalsPanel())
+        {
+            bossGoalsPanel.setVisible(false);
+        }
+
         this.add(sidePanel, "North");
     }
+
+
+
+    int killsDone;
+    int totalKillsToGet;
+    int killsLeft;
+    double TTG;
+    double percentDone;
+
+    //this empty label is needed to make sure the txt is centered on the progress bar *don't ask me how or why it works, its magic*
+    private final JLabel magicCenteringLabel = new JLabel();
+
+    public void updateBossGoalsPanel()
+    {
+        if(plugin.sessionNpc == null)
+        {
+            return;
+        }
+
+        if(fileRW.startKc == 0 && fileRW.endKc == 0)
+        {
+            bossGoalsKphLabel.setText(htmlLabel("KPH: ","N/A"));
+            killsDoneLabel.setText(htmlLabel("Kills Done: ","N/A"));
+            killsLeftLabel.setText(htmlLabel("Kills Left: " ,"N/A"));
+            timeToGoalLabel.setText(htmlLabel("TTG: ", "N/A"));
+            KphBossInfo kphBossInfo = KphBossInfo.find(plugin.sessionNpc);
+            itemManager.getImage(kphBossInfo.getIcon()).addTo(bossGoalsIconLabel);
+            bossGoalsIconLabel.setVisible(true);
+            goalInfoPanel.setBorder(new EmptyBorder(5, 0, 0, 17));
+            progressBar.setLeftLabel("");
+            progressBar.setRightLabel("");
+            progressBar.setCenterLabel("Set a boss goal to activate");
+            progressBar.setValue(0);
+            progressBar.setDimmed(false);
+            return;
+
+        }
+
+        DecimalFormat df = new DecimalFormat("#.#");
+
+        killsDone = plugin.killCount - fileRW.startKc;
+
+        totalKillsToGet = fileRW.endKc - fileRW.startKc;
+
+        killsLeft = totalKillsToGet - killsDone;
+
+        TTG = killsLeft / plugin.killsPerHour;
+
+        percentDone = 100 * ((double) killsDone / (double) totalKillsToGet);
+
+        if(killsLeft <= 0)
+        {
+            bossGoalsKphLabel.setText(htmlLabel("KPH: ",plugin.formatKPH()));
+            killsDoneLabel.setText(htmlLabel("Kills Done: ",String.valueOf(totalKillsToGet)));
+            killsLeftLabel.setText(htmlLabel("Kills Left: ","0"));
+            timeToGoalLabel.setText(htmlLabel("TTG: ","00:00:00"));
+            progressBar.setCenterLabel("Completed");
+            progressBar.setValue(100);
+
+        }
+        else
+        {
+            bossGoalsKphLabel.setText(htmlLabel("KPH: ",plugin.formatKPH()));
+            killsDoneLabel.setText(htmlLabel("Kills Done: ",String.valueOf(killsDone)));
+            killsLeftLabel.setText(htmlLabel("Kills Left: ",String.valueOf(killsLeft)));
+            timeToGoalLabel.setText(htmlLabel("TTG: ",plugin.timeConverter((int)(TTG * 3600))));
+
+            percentDone = Double.parseDouble(df.format(percentDone));
+            progressBar.setCenterLabel(percentDone + "%");
+            progressBar.setValue((int)percentDone);
+        }
+
+
+        if(config.displayRelativeKills())
+        {
+            progressBar.setLeftLabel(String.valueOf(0));
+            progressBar.setRightLabel(String.valueOf(totalKillsToGet));
+        }
+        else
+        {
+            progressBar.setLeftLabel(String.valueOf(fileRW.startKc));
+            progressBar.setRightLabel(String.valueOf(fileRW.endKc));
+        }
+
+        int length;
+        //use this to measure width *****************************************
+        FontMetrics fontMetrics = getGraphics().getFontMetrics(FontManager.getRunescapeSmallFont());
+        boolean killsDoneIsLonger = (fontMetrics.stringWidth(killsLeftLabel.getText()) < fontMetrics.stringWidth(killsDoneLabel.getText()));
+
+        if(killsDoneIsLonger){length = fontMetrics.stringWidth(killsDoneLabel.getText());}
+        else {length = fontMetrics.stringWidth(killsLeftLabel.getText());}
+
+        int offset;
+        offset = 521 - length;
+        goalInfoPanel.setBorder(new EmptyBorder(5, 0, 0, offset));
+
+
+        //this empty label is needed to make sure the txt is centered on the progress bar *don't ask me how or why it works, its magic*
+        //this needs to be added here not when it is first built otherwise it will override the % text
+        progressBar.add(magicCenteringLabel);
+
+
+        KphBossInfo kphBossInfo = KphBossInfo.find(plugin.sessionNpc);
+        itemManager.getImage(kphBossInfo.getIcon()).addTo(bossGoalsIconLabel);
+
+        bossGoalsIconLabel.setVisible(true);
+        progressBar.setForeground(new Color(91, 154, 47));
+        progressBar.setDimmed(false);
+
+        if(plugin.paused)
+        {
+            progressBar.setCenterLabel("Paused");
+            progressBar.setForeground(new Color(167, 125, 38));
+        }
+
+        progressBar.repaint();
+
+    }
+
+
+    private JPanel buildBossGoalsPanel()
+    {
+        bossGoalsPanel.setLayout(new BorderLayout());
+
+        bossGoalsPanel.setBorder(new EmptyBorder(0, 10, 0, 10));
+
+        bossGoalsPanel.setBorder(new MatteBorder(1, 1, 1, 1, new Color(49, 49, 49)));
+
+
+        progressBarPanel.setBorder(new EmptyBorder(5, 5, 7, 5));
+
+
+        progressBar.setBackground(new Color(61, 56, 49));
+        progressBar.setForeground(new Color(91, 154, 47));
+
+
+        progressBar.setMaximumValue(100);
+        progressBar.setCenterLabel(percentDone + "%");
+        progressBar.setValue((int)percentDone);
+
+
+        progressBarPanel.add(progressBar);
+        progressBarPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+
+        JMenuItem setBossGoalMenuItem = new JMenuItem("Set Boss Goal");
+        setBossGoalMenuItem.addActionListener(e -> bossGoalsOptionPane());
+
+        JMenuItem resetBossGoalMenuItem = new JMenuItem("Reset Boss Goal");
+        resetBossGoalMenuItem.addActionListener(e -> fileRW.resetBossGoal());
+
+        JPopupMenu popupMenu = new JPopupMenu();
+        popupMenu.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+        popupMenu.add(setBossGoalMenuItem);
+        popupMenu.add(resetBossGoalMenuItem);
+
+
+        bossGoalsPanel.setComponentPopupMenu(popupMenu);
+
+
+
+        JPanel iconPanel = new JPanel(new GridBagLayout());
+
+
+        iconPanel.setLayout(new GridLayout(0, 1, 0, 0));
+        //this controls the offset of the current boss name, useful for alinging the icon
+        iconPanel.setBorder(new EmptyBorder(5, 5, 0, 0));
+
+
+
+        bossGoalsKphLabel.setFont(FontManager.getRunescapeSmallFont());
+        killsDoneLabel.setFont(FontManager.getRunescapeSmallFont());
+        timeToGoalLabel.setFont(FontManager.getRunescapeSmallFont());
+        killsLeftLabel.setFont(FontManager.getRunescapeSmallFont());
+
+
+
+        goalInfoPanel.setLayout(new GridLayout(2, 0, 0, 0));
+        goalInfoPanel.setBorder(new EmptyBorder(5, 0, 0, 17));
+
+        goalInfoPanel2.setLayout(new GridLayout(2, 0, 0, 0));
+        goalInfoPanel2.setBorder(new EmptyBorder(5, 3, 0, 3));
+
+        //placeholder image used to keep spaceing consistnat
+        bossGoalsIconLabel.setIcon(new ImageIcon(itemManager.getImage(ItemID.YOUNGLLEF)));
+        bossGoalsIconLabel.setVisible(false);
+
+        //sets the continer panel to opaque or not, false = transparent, this will only affect the assingned panel. it will not affect any other content or panel within said panel.
+        iconPanel.setOpaque(false);
+        goalInfoPanel.setOpaque(false);
+        goalInfoPanel2.setOpaque(false);
+        progressBarPanel.setOpaque(false);
+
+        //adds the lables to the respective panel in the order they are added
+        iconPanel.add(bossGoalsIconLabel);
+        goalInfoPanel2.add(bossGoalsKphLabel);
+        goalInfoPanel.add(killsDoneLabel);
+        goalInfoPanel2.add(timeToGoalLabel);
+        goalInfoPanel.add(killsLeftLabel);
+
+        bossGoalsPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+
+        bossGoalsPanel.add(goalInfoPanel2);
+        bossGoalsPanel.add(goalInfoPanel,"East");
+        bossGoalsPanel.add(iconPanel, "West");
+        bossGoalsPanel.add(progressBarPanel,"South");
+
+        return bossGoalsPanel;
+    }
+
+
+
+
 
 
     private JPanel buildlookupInfoPanelHeader()
@@ -242,8 +495,8 @@ class KphPanel extends PluginPanel {
 
         }
 
-
-        int offset = 180 - ((fetchedBossName.getText().length() * 8) + 6) ;
+        FontMetrics fontMetrics = getGraphics().getFontMetrics(FontManager.getRunescapeBoldFont());
+        int offset = 180 - (fontMetrics.stringWidth(fetchedBossName.getText()) + 10);
                                                         //if i chan
         fetchedIcon.setBorder(new EmptyBorder(0, 0, 0,offset));
 
@@ -262,27 +515,27 @@ class KphPanel extends PluginPanel {
         }
 
         fileRW.fetchedStatConverter();
-        fetchedFastestKill.setText("Fastest Kill: " + plugin.timeConverter(fileRW.fetchedFastestKill));
-        fetchedTotalTrackedKills.setText("Tracked Kills: " + fileRW.fetchedTotalTrackedKills);
-        fetchedTotalTimeActual.setText("Total Session Time: " + plugin.timeConverter(fileRW.fetchedTotalTimeActual));
-        fetchedTotalTimeVirtual.setText("Total Boss Time: " + plugin.timeConverter(fileRW.fetchedTotalTimeVirtual));
-        fetchedKillsPerHour.setText("KPH: " + fileRW.fetchedKillsPerHour);
-        fetchedTotalBossKc.setText("Total KC: " + fileRW.fetchedTotalBossKc);
-        fetchedAverageKillTime.setText("Average Kill: " + plugin.timeConverter(fileRW.fetchedAverageKillTime));
-        estimatedTimeSpentBossing.setText("EST Bossing Time: " + plugin.timeConverter(fileRW.estimatedTimeSpentBossing));
+        fetchedFastestKill.setText(htmlLabel("Fastest Kill: ",plugin.timeConverter(fileRW.fetchedFastestKill)));
+        fetchedTotalTrackedKills.setText(htmlLabel("Tracked Kills: ",String.valueOf(fileRW.fetchedTotalTrackedKills)));
+        fetchedTotalTimeActual.setText(htmlLabel("Total Session Time: ",plugin.timeConverter(fileRW.fetchedTotalTimeActual)));
+        fetchedTotalTimeVirtual.setText(htmlLabel("Total Boss Time: ", plugin.timeConverter(fileRW.fetchedTotalTimeVirtual)));
+        fetchedKillsPerHour.setText(htmlLabel("KPH: ",String.valueOf(fileRW.fetchedKillsPerHour)));
+        fetchedTotalBossKc.setText(htmlLabel("Total KC: ",String.valueOf(fileRW.fetchedTotalBossKc)));
+        fetchedAverageKillTime.setText(htmlLabel("Average Kill: ", plugin.timeConverter(fileRW.fetchedAverageKillTime)));
+        estimatedTimeSpentBossing.setText(htmlLabel("EST Bossing Time: ", plugin.timeConverter(fileRW.estimatedTimeSpentBossing)));
     }
 
 
     public void setLookupInfoToNull()
     {
-        fetchedFastestKill.setText("Fastest Kill: N/A");
-        fetchedTotalTrackedKills.setText("Tracked Kills: N/A" );
-        fetchedTotalTimeActual.setText("Total Session Time: N/A" );
-        fetchedTotalTimeVirtual.setText("Total Boss Time: N/A");
-        fetchedKillsPerHour.setText("KPH: N/A");
-        fetchedTotalBossKc.setText("Total KC: N/A");
-        fetchedAverageKillTime.setText("Average Kill: N/A");
-        estimatedTimeSpentBossing.setText("EST Bossing Time: N/A");
+        fetchedFastestKill.setText(htmlLabel("Fastest Kill: ","N/A"));
+        fetchedTotalTrackedKills.setText(htmlLabel("Tracked Kills: ", "N/A"));
+        fetchedTotalTimeActual.setText(htmlLabel("Total Session Time: ", "N/A"));
+        fetchedTotalTimeVirtual.setText(htmlLabel("Total Boss Time: ", "N/A"));
+        fetchedKillsPerHour.setText(htmlLabel("KPH: ", "N/A"));
+        fetchedTotalBossKc.setText(htmlLabel("Total KC: ", "N/A"));
+        fetchedAverageKillTime.setText(htmlLabel("Average Kill: ", "N/A"));
+        estimatedTimeSpentBossing.setText(htmlLabel("EST Bossing Time: ", "N/A"));
     }
 
 
@@ -315,16 +568,17 @@ class KphPanel extends PluginPanel {
         trashButton.setBorder(new EmptyBorder(0, 0, 2, 0));
         trashButton.setRolloverIcon(TRASH_ICON_HOVER);
         trashButton.setToolTipText("Delete Boss Info");
+
         trashButton.addActionListener(e -> deleteFile());
 
         SwingUtil.removeButtonDecorations(trashButton);
-
 
         closeAndTrashButtonPanel.add(trashButton,"West");
 
 
         //adds the lables to the respective panel in the order they are added
         fetchedBossName.setFont(FontManager.getRunescapeBoldFont());
+        fetchedBossName.setForeground(new Color(219, 219, 219));
 
 
         fetchedIcon.add(fetchedIconLabel);
@@ -352,10 +606,86 @@ class KphPanel extends PluginPanel {
     }
 
 
+
+    public static BufferedImage resizeImage(BufferedImage image, int newWidth, int newHeight)
+    {
+        BufferedImage scaledImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics g = scaledImage.createGraphics();
+        g.drawImage(image, 0, 0, newWidth, newHeight, null);
+        g.dispose();
+        return scaledImage;
+    }
+
+
+    int startKC;
+    int endKC;
+
+    public void bossGoalsOptionPane()
+    {
+
+        fileRW.getCurrentBossKCGoal();
+
+        startKcSpinner.setBounds(0,0,50,20);
+        startKcSpinner.setMaximumSize(new Dimension(100,20));
+        startKcSpinner.setPreferredSize(new Dimension(100,20));
+        startKcSpinner.setMinimumSize(new Dimension(100,20));
+
+        endKcSpinner.setMaximumSize(new Dimension(100,20));
+        endKcSpinner.setPreferredSize(new Dimension(100,20));
+        endKcSpinner.setMinimumSize(new Dimension(100,20));
+
+        bossGoalsInputPanel.setBorder(new EmptyBorder(0, 0, 5, 0));
+        bossGoalsInputPanel.setLayout(new GridLayout(0,2,0,5));
+
+        bossGoalsInputPanel.setMaximumSize(new Dimension(100,20));
+        bossGoalsInputPanel.setPreferredSize(new Dimension(100,20));
+        bossGoalsInputPanel.setMinimumSize(new Dimension(100,20));
+
+        startKcLabel.setMaximumSize(new Dimension(120,20));
+        startKcLabel.setPreferredSize(new Dimension(120,20));
+        startKcLabel.setMinimumSize(new Dimension(120,20));
+
+        endKcLabel.setMaximumSize(new Dimension(120,20));
+        endKcLabel.setPreferredSize(new Dimension(120,20));
+        endKcLabel.setMinimumSize(new Dimension(120,20));
+
+        endKcLabel.setBorder(new EmptyBorder(0, 0, 0, 20));
+        startKcLabel.setBorder(new EmptyBorder(0, 0, 0, 20));
+
+        bossGoalsInputPanel.add(startKcLabel);
+        bossGoalsInputPanel.add(startKcSpinner);
+        bossGoalsInputPanel.add(endKcLabel);
+        bossGoalsInputPanel.add(endKcSpinner);
+
+
+        KphBossInfo  kphBossInfo =  KphBossInfo.find(plugin.sessionNpc);
+        AsyncBufferedImage bossSprite = itemManager.getImage(kphBossInfo.getIcon());
+        ImageIcon imageIcon = new ImageIcon(resizeImage(bossSprite,50,44));
+
+        UIManager.put("OptionPane.minimumSize",new Dimension(250,100));
+
+        int option = JOptionPane.showOptionDialog(null, bossGoalsInputPanel, "Set Boss KC Goal", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,imageIcon, null, null);
+
+        if (option == JOptionPane.OK_OPTION)
+        {
+
+            startKC = (int) startKcSpinner.getValue();
+            endKC = (int) endKcSpinner.getValue();
+
+            fileRW.updateBossKCGoal();
+            updateBossGoalsPanel();
+
+            System.out.println(startKC);
+            System.out.println(endKC);
+        }
+
+    }
+
     public void deleteFile()
     {
         if(fileRW.fetchedFile.exists())
         {
+
             int confirm = JOptionPane.showConfirmDialog(
                     KphPanel.this,
                     "Are you sure you want to permanently delete " + fileRW.fetchedFile.getName(),
@@ -386,10 +716,14 @@ class KphPanel extends PluginPanel {
     {
         sidePanel.remove(fetchedInfoPanel);
         sidePanel.remove(lookupInfoPanelHeader);
+
         sidePanel.add(bossInfoPanel);
         sidePanel.add(buttonIconTab);
+        sidePanel.add(bossGoalsPanel);
+
         sidePanel.setComponentZOrder(bossInfoPanel,2);
-        sidePanel.setComponentZOrder(buttonIconTab,3);
+        sidePanel.setComponentZOrder(bossGoalsPanel,3);
+        sidePanel.setComponentZOrder(buttonIconTab,4);
         sidePanel.revalidate();
     }
 
@@ -398,8 +732,11 @@ class KphPanel extends PluginPanel {
         sidePanel.remove(buttonIconTab);
         sidePanel.remove(bossInfoPanel);
         sidePanel.remove(historicalInfoPanel);
+        sidePanel.remove(bossGoalsPanel);
+
         sidePanel.add(lookupInfoPanelHeader);
         sidePanel.add(fetchedInfoPanel);
+
         sidePanel.setComponentZOrder(lookupInfoPanelHeader,2);
         sidePanel.setComponentZOrder(fetchedInfoPanel,3);
         sidePanel.setComponentZOrder(pauseAndResumeButtons,4);
@@ -410,29 +747,26 @@ class KphPanel extends PluginPanel {
 
     public void openCurrentHistoricalData()
     {
-
         sidePanel.add(historicalInfoPanel);
-        sidePanel.setComponentZOrder(historicalInfoPanel,4);
+        sidePanel.setComponentZOrder(historicalInfoPanel,5);
         sidePanel.revalidate();
         fillHistoricalData();
-
     }
 
     public void fillHistoricalData()
     {
         historicalInfoLabel.setText("Historical Information");
-        totalTrackedTime.setText("Time Tracked: " + plugin.timeConverter(fileRW.overallTime));
-        totalTrackedKills.setText("Kills Tracked: " + fileRW.newTotalKills);
-        actualTotalAverageKillTime.setText("Average Kill: " + plugin.timeConverter(fileRW.averageKillTime));
-        actualTotalKph.setText("KPH: " + fileRW.killsPerHour);
-        overallFastestKill.setText("Fastest Kill: " + plugin.timeConverter(fileRW.newFastestKill));
+        totalTrackedTime.setText(htmlLabel("Time Tracked: ",plugin.timeConverter(fileRW.overallTime)));
+        totalTrackedKills.setText(htmlLabel("Kills Tracked: ",String.valueOf(fileRW.newTotalKills)));
+        actualTotalAverageKillTime.setText(htmlLabel("Average Kill: ",plugin.timeConverter(fileRW.averageKillTime)));
+        actualTotalKph.setText(htmlLabel("KPH: ",String.valueOf(fileRW.killsPerHour)));
+        overallFastestKill.setText(htmlLabel("Fastest Kill: ",plugin.timeConverter(fileRW.newFastestKill)));
     }
 
     public void closeCurrentHistoricalData()
     {
         sidePanel.remove(historicalInfoPanel);
         sidePanel.revalidate();
-
     }
 
 
@@ -485,15 +819,19 @@ class KphPanel extends PluginPanel {
     }
 
 
+
+
     private JPanel buildBossInfoPanel()
     {
         bossInfoPanel.setLayout(new BorderLayout());
 
-        bossInfoPanel.setBorder(new EmptyBorder(0, 10, 0, 10));
+        bossInfoPanel.setBorder(new EmptyBorder(0, 0, 4, 0));
 
-        bossInfoPanel.setBorder(new MatteBorder(0, 0, 0, 0, new Color(37, 125, 141)));
+        //bossInfoPanel.setBorder(new MatteBorder(0, 0, 0, 0, new Color(37, 125, 141)));
 
         JPanel sessionInfoSection = new JPanel(new GridBagLayout());
+        sessionInfoSection.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+
 
         sessionInfoSection.setLayout(new GridLayout(7, 1, 0, 10));
 
@@ -536,8 +874,12 @@ class KphPanel extends PluginPanel {
         {
             KphBossInfo kphBossInfo = KphBossInfo.find(bossName);
             AsyncBufferedImage bossSprite = itemManager.getImage(kphBossInfo.getIcon());
+
+            FontMetrics fontMetrics = getGraphics().getFontMetrics(FontManager.getRunescapeBoldFont());
             //this is how the icon is positioned
-            int offset = 150 - ((plugin.sessionNpc.length() * 8) + 6) ;
+            //int offset = 150 - ((plugin.sessionNpc.length() * 8) + 6) ;
+            int offset = 150 - (fontMetrics.stringWidth(plugin.sessionNpc) + 10);
+
                                                             //if i change the bottom offset i can compensate when changeing the row number of the session info
             icon.setBorder(new EmptyBorder(0, 0, 153,offset));
 
@@ -640,15 +982,17 @@ class KphPanel extends PluginPanel {
                     plugin.setCalcMode(1);
                     switchModeButton.setText("    Virtual     ");
                     plugin.calcKillsPerHour();
-                    updateLookupInfo();
                     switchHistoricalInfo();
+                    updateLookupInfo();
+                    updateBossGoalsPanel();
                     break;
                 case 1:
                     plugin.setCalcMode(0);
                     switchModeButton.setText("     Actual     ");
                     plugin.calcKillsPerHour();
-                    updateLookupInfo();
                     switchHistoricalInfo();
+                    updateLookupInfo();
+                    updateBossGoalsPanel();
                     break;
 
             }
@@ -768,19 +1112,21 @@ class KphPanel extends PluginPanel {
 
     public void setSessionTimeLabel()
     {
-        sessionTimeLabel.setText("Session time: " + plugin.timeConverter(plugin.totalSessionTime));
+        SwingUtilities.invokeLater(() -> sessionTimeLabel.setText(htmlLabel("Session time: ",plugin.timeConverter(plugin.totalSessionTime))));
+        //sessionTimeLabel.setText("Session time: " + plugin.timeConverter(plugin.totalSessionTime));
     }
 
     public void setSessionInfo()
     {
         if(plugin.sessionNpc != null)
         {
-            killsPerHourLabel.setText("KPH: " + plugin.formatKPH());
-            averageKillTimeLabel.setText("Average Kill: " + plugin.avgKillTimeConverter());
-            totalBossKillsLabel.setText("Kills: " + plugin.killsThisSession);
-            idleTimeLabel.setText("Idle Time: " + plugin.timeConverter(plugin.timeSpentIdle));
+            killsPerHourLabel.setText(htmlLabel("KPH: ",plugin.formatKPH()));
+            averageKillTimeLabel.setText(htmlLabel("Average Kill: ",plugin.avgKillTimeConverter()));
+            totalBossKillsLabel.setText(htmlLabel("Kills: ",String.valueOf(plugin.killsThisSession)));
+            idleTimeLabel.setText(htmlLabel("Idle Time: ",plugin.timeConverter(plugin.timeSpentIdle)));
             currentBossNameLabel.setText(plugin.sessionNpc);
-            fastestKillTimeLabel.setText("Fastest Kill: " + plugin.timeConverter(plugin.fastestKill));
+            fastestKillTimeLabel.setText(htmlLabel("Fastest Kill: ",plugin.timeConverter(plugin.fastestKill)));
+
 
             if(!plugin.paused)
             {
@@ -791,17 +1137,16 @@ class KphPanel extends PluginPanel {
 
         if(plugin.sessionNpc == null && plugin.cacheHasInfo)
         {
-            killsPerHourLabel.setText("KPH: " + plugin.cachedKPH);
-            averageKillTimeLabel.setText("Average Kill: " + plugin.cachedAvgKillTime);
-            totalBossKillsLabel.setText("Kills: " + plugin.cachedSessionKills);
-            idleTimeLabel.setText("Idle Time: " + plugin.cachedIdleTime);
+            killsPerHourLabel.setText(htmlLabel("KPH: ",plugin.cachedKPH));
+            averageKillTimeLabel.setText(htmlLabel("Average Kill: ", plugin.cachedAvgKillTime));
+            totalBossKillsLabel.setText(htmlLabel("Kills: ", String.valueOf(plugin.cachedSessionKills)));
+            idleTimeLabel.setText(htmlLabel("Idle Time: ", plugin.cachedIdleTime));
             currentBossNameLabel.setText(plugin.cachedSessionNpc);
-            fastestKillTimeLabel.setText("Fastest Kill: " + plugin.cachedFastestKill);
+            fastestKillTimeLabel.setText(htmlLabel("Fastest Kill: ",plugin.cachedFastestKill));
             currentBossNameLabel.setForeground(new Color(187, 187, 187));
         }
 
     }
-
 
 
     public void updateKphMethod()
@@ -814,6 +1159,10 @@ class KphPanel extends PluginPanel {
         currentBossNameLabel.setForeground(new Color(227, 160, 27));
     }
 
+    static String htmlLabel(String key, String valueStr)
+    {
+        return String.format(HTML_LABEL_TEMPLATE, ColorUtil.toHexColor(ColorScheme.LIGHT_GRAY_COLOR), key, valueStr);
+    }
 
     static
     {

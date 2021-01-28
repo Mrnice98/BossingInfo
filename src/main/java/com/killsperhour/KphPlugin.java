@@ -101,6 +101,10 @@ public class KphPlugin extends Plugin
     @Inject
     private FileReadWriter fileReadWriter;
 
+    @Inject
+    private KphBossGoalsOverlay kphBossGoalsOverlay;
+
+    @Getter
     private KphPanel panel;
 
     private KphInfobox infobox;
@@ -174,6 +178,22 @@ public class KphPlugin extends Plugin
 
     int lastAttkTimeout = 99999;
 
+
+
+    int startKC;
+    int endKC;
+
+
+
+    public void test()
+    {
+        startKC = fileReadWriter.startKc;
+        endKC = fileReadWriter.endKc;
+    }
+
+
+
+
     // 0 = Take idle into account & 1 = Dont take idle into account
     @Getter
     @Setter
@@ -203,6 +223,7 @@ public class KphPlugin extends Plugin
         {
             case "KPH Calc Method":
                 panel.updateKphMethod();
+                panel.updateBossGoalsPanel();
                 break;
 
             case "Side Panel":
@@ -253,6 +274,18 @@ public class KphPlugin extends Plugin
                     infoBoxManager.removeInfoBox(infobox);
                 }
                 break;
+
+            case "Display relative kills":
+                if(sessionNpc != null)
+                {
+                    panel.updateBossGoalsPanel();
+                }
+                break;
+
+            case "Display Boss Goals Panel":
+                panel.bossGoalsPanel.setVisible(config.displayBossGoalsPanel());
+                break;
+
         }
 
     }
@@ -261,7 +294,6 @@ public class KphPlugin extends Plugin
     @Subscribe
     public void onGameStateChanged(GameStateChanged gameStateChanged)
     {
-
        if(gameStateChanged.getGameState() == GameState.HOPPING || gameStateChanged.getGameState() == GameState.LOGGING_IN)
        {
            attkCount = 0;
@@ -270,7 +302,8 @@ public class KphPlugin extends Plugin
 
        }
 
-       if(gameStateChanged.getGameState() == GameState.LOGIN_SCREEN)
+
+        if(gameStateChanged.getGameState() == GameState.LOGIN_SCREEN)
        {
            sessionPause();
        }
@@ -280,16 +313,19 @@ public class KphPlugin extends Plugin
 
 
     @Subscribe
-    public void onChatMessage(ChatMessage chatMessage) {
+    public void onChatMessage(ChatMessage chatMessage)
+    {
         Player player = client.getLocalPlayer();
         assert player != null;
 
         //this delay is needed as if a player hops worlds, the chat is reloaded and the kills per session would 2x if not for the delay to stop the plugin from reading them.
         //if there is a command like !end in the chat that will still be read
-        if (delayTicks < 5) {
+        if(delayTicks < 5)
+        {
             return;
         }
-        if (chatMessage.getType() == ChatMessageType.GAMEMESSAGE || chatMessage.getType() == ChatMessageType.FRIENDSCHATNOTIFICATION || chatMessage.getType() == ChatMessageType.SPAM) {
+        if (chatMessage.getType() == ChatMessageType.GAMEMESSAGE || chatMessage.getType() == ChatMessageType.FRIENDSCHATNOTIFICATION || chatMessage.getType() == ChatMessageType.SPAM)
+        {
             canRun = false;
             this.message = chatMessage.getMessage();
 
@@ -297,7 +333,8 @@ public class KphPlugin extends Plugin
 
             sMethods.sireTimeClac();
             //stops plugin from reading chat when paused
-            if (paused) {
+            if(paused)
+            {
                 return;
             }
             bossKc();
@@ -550,17 +587,6 @@ public class KphPlugin extends Plugin
 
 
     }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -903,6 +929,11 @@ public class KphPlugin extends Plugin
 
             infoBoxManager.removeInfoBox(infobox);
             panel.setSessionInfo();
+            panel.progressBar.setDimmed(true);
+            panel.progressBar.setForeground(new Color(88, 88, 88));
+            panel.progressBar.setDimmedText("No Session");
+            panel.progressBar.repaint();
+
         }
 
     }
@@ -923,6 +954,8 @@ public class KphPlugin extends Plugin
         panel.pauseResumeButton.setText("      Pause     ");
 
         nullStartTimesForSpecialBosses();
+
+        fileReadWriter.resetStartAndEndKc();
 
         timeoutStart = Instant.now();
         totalBossKillTime = bossKillTime();
@@ -1018,6 +1051,10 @@ public class KphPlugin extends Plugin
 
             pauseStart = Instant.now();
             panel.setBossNameColor();
+            panel.progressBar.setForeground(new Color(167, 125, 38));
+            panel.progressBar.setCenterLabel("Paused");
+            panel.progressBar.repaint();
+
         }
     }
 
@@ -1034,6 +1071,10 @@ public class KphPlugin extends Plugin
             nullStartTimesForSpecialBosses();
             attkCount = 0;
             panel.currentBossNameLabel.setForeground(new Color(71, 226, 12));
+            panel.progressBar.setForeground(new Color(91, 154, 47));
+            panel.progressBar.setCenterLabel(panel.percentDone + "%");
+            panel.updateBossGoalsPanel();
+            panel.progressBar.repaint();
             chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Session Resumed").build());
         }
     }
@@ -1121,6 +1162,7 @@ public class KphPlugin extends Plugin
             {
                 fileReadWriter.createAndUpdate();
                 panel.setHistoricalInfo();
+                panel.updateBossGoalsPanel();
                 canRun = false;
             }
         }
@@ -1486,6 +1528,7 @@ public class KphPlugin extends Plugin
         paused = false;
         cacheHasInfo = false;
         overlayManager.add(overlay);
+        overlayManager.add(kphBossGoalsOverlay);
     }
 
     @Override
@@ -1501,5 +1544,6 @@ public class KphPlugin extends Plugin
         clientToolbar.removeNavigation(navButton);
         infoBoxManager.removeInfoBox(infobox);
         overlayManager.remove(overlay);
+        overlayManager.remove(kphBossGoalsOverlay);
     }
 }

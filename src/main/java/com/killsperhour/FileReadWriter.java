@@ -25,7 +25,7 @@ public class FileReadWriter
 
     Client client;
 
-    KphPanel panel;
+    KphBossGoalsOverlay goalsOverlay;
 
 
     @Inject
@@ -133,6 +133,102 @@ public class FileReadWriter
     }
 
 
+
+    public void getCurrentBossKCGoal()
+    {
+        int totalBossKc;
+        try
+        {
+            List<String> list = Files.readAllLines(path);
+            list.forEach(line -> list.toArray());
+
+            totalBossKc = Integer.parseInt(list.get(4).replaceAll("[^0-9]", ""));
+            startKc = Integer.parseInt(list.get(5).replaceAll("[^0-9]", ""));
+            endKc = Integer.parseInt(list.get(6).replaceAll("[^0-9]", ""));
+
+            plugin.getPanel().startKcModel.setValue(startKc);
+
+            if(endKc > totalBossKc)
+            {
+                plugin.getPanel().endKcModel.setValue(endKc);
+            }
+            else
+            {
+                plugin.getPanel().endKcModel.setValue(totalBossKc + 1);
+            }
+
+            plugin.getPanel().startKcModel.setMaximum(totalBossKc);
+            plugin.getPanel().endKcModel.setMinimum(totalBossKc + 1);
+
+        }
+        catch (IOException e)
+        {
+            System.out.println("No Such File");
+        }
+
+    }
+
+
+    public void updateBossKCGoal()
+    {
+        try
+        {
+
+            List<String> list = Files.readAllLines(path);
+            list.forEach(line -> list.toArray());
+
+            startKc = plugin.getPanel().startKC;
+            endKc = plugin.getPanel().endKC;
+
+            list.set(5, plugin.getPanel().startKC + " Start Kc");
+            list.set(6, plugin.getPanel().endKC + " End Kc");
+
+            Files.delete(path);
+            Files.write(path, list, StandardOpenOption.CREATE,StandardOpenOption.APPEND);
+
+
+        }
+        catch (IOException e)
+        {
+            System.out.println("No Such File");
+        }
+
+
+
+    }
+
+    public void resetBossGoal()
+    {
+        try
+        {
+            List<String> list = Files.readAllLines(path);
+            list.forEach(line -> list.toArray());
+
+            list.set(5, 0 + " Start Kc");
+            list.set(6, 0 + " End Kc");
+
+            startKc = 0;
+            endKc = 0;
+
+            Files.delete(path);
+            Files.write(path, list, StandardOpenOption.CREATE,StandardOpenOption.APPEND);
+
+            plugin.getPanel().updateBossGoalsPanel();
+
+        }
+        catch (IOException e)
+        {
+            System.out.println("No Such File");
+        }
+
+    }
+
+
+
+
+
+
+
     public void createDirectory()
     {
 
@@ -152,6 +248,16 @@ public class FileReadWriter
 
     }
 
+
+    int totalBossKc;
+    int startKc;
+    int endKc;
+
+    public void resetStartAndEndKc()
+    {
+        startKc = 0;
+        endKc = 0;
+    }
 
 
     public void createFileForBoss()
@@ -173,6 +279,23 @@ public class FileReadWriter
             oldTotalVirtualTime = Integer.parseInt(list.get(1).replaceAll("[^0-9]", ""));
             oldTotalKills = Integer.parseInt(list.get(2).replaceAll("[^0-9]", ""));
             oldFastestKill = Integer.parseInt(list.get(3).replaceAll("[^0-9]", ""));
+            totalBossKc = Integer.parseInt(list.get(4).replaceAll("[^0-9]", ""));
+
+            if (list.size() == 7)
+            {
+                startKc = Integer.parseInt(list.get(5).replaceAll("[^0-9]", ""));
+                endKc = Integer.parseInt(list.get(6).replaceAll("[^0-9]", ""));
+            }
+            else
+            {
+                StringBuilder contentBuilder = new StringBuilder();
+                contentBuilder.append(0);
+                contentBuilder.append(" Start Kc\n");
+                contentBuilder.append(0);
+                contentBuilder.append(" End Kc\n");
+                String content = contentBuilder.toString();
+                Files.write(path, content.getBytes(), StandardOpenOption.APPEND);
+            }
 
         }
 
@@ -194,6 +317,10 @@ public class FileReadWriter
                 contentBuilder.append(" Fastest Kill\n");
                 contentBuilder.append(plugin.killCount);
                 contentBuilder.append(" Total Kc\n");
+                contentBuilder.append(0);
+                contentBuilder.append(" Start Kc\n");
+                contentBuilder.append(0);
+                contentBuilder.append(" End Kc\n");
 
 
                 String content = contentBuilder.toString();
@@ -214,6 +341,8 @@ public class FileReadWriter
         }
 
     }
+
+
 
     public void nullValuesForFileCreation()
     {
@@ -250,7 +379,8 @@ public class FileReadWriter
         System.out.println(oldTotalTime + " old");
         System.out.println(plugin.lastKillTotalTime_1 + " last kill total time");
         System.out.println(newTotalTimeActual + " new total time");
-        System.out.println(timeOffset + " old time offset");
+        System.out.println(startKc + " start");
+        System.out.println(endKc + " end");
 
         if(plugin.isBossChatDisplay())
         {
@@ -326,6 +456,10 @@ public class FileReadWriter
             contentBuilder.append(" Fastest Kill\n");
             contentBuilder.append(plugin.killCount);
             contentBuilder.append(" Total Kc\n");
+            contentBuilder.append(startKc);
+            contentBuilder.append(" Start Kc\n");
+            contentBuilder.append(endKc);
+            contentBuilder.append(" End Kc\n");
 
             String content = contentBuilder.toString();
             Files.write(path, content.getBytes(), StandardOpenOption.CREATE,StandardOpenOption.APPEND);
