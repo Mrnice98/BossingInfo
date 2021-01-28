@@ -90,7 +90,7 @@ Alternatively feel free to leave a comment or open an issue on GitHub
 
   - Side Panel-
   Enables or Disables the side panel   
-  ![Imgur Image](https://i.imgur.com/1grrmmS.png)
+  ![Imgur Image](https://i.imgur.com/bsBkNXQ.png)
     - Actual-
     this is your bossing info clculated with idle time taken into account.
     - Virtual-
