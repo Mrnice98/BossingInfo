@@ -41,6 +41,10 @@ class KphBossGoalsOverlay extends OverlayPanel
         this.plugin = plugin;
         this.itemManager = itemManager;
         this.fileRW = fileRW;
+        panelComponent.setBorder(new Rectangle(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE));
+        iconAndInfoPanel.setBorder(ICON_AND_INFO_COMPONENT_BORDER);
+        iconAndInfoPanel.setBackgroundColor(null);
+        getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY_CONFIG, OPTION_CONFIGURE, "Bossing info overlay"));
         this.createPanels();
     }
 
@@ -156,12 +160,6 @@ class KphBossGoalsOverlay extends OverlayPanel
 
         }
 
-
-
-        panelComponent.setBorder(new Rectangle(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE));
-        iconAndInfoPanel.setBorder(ICON_AND_INFO_COMPONENT_BORDER);
-        iconAndInfoPanel.setBackgroundColor(null);
-        getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY_CONFIG, OPTION_CONFIGURE, "Bossing info overlay"));
 
         topLine = LineComponent.builder()
                 .left(leftStr)
