@@ -39,7 +39,7 @@ Alternatively feel free to leave a comment or open an issue on GitHub
 
 - **Display Options**
 
-  - Eanble Overlay-   
+  - Enable Overlay-   
   Enables the box overlay.                                          
   ![Imgur Image](https://i.imgur.com/L3oqkuw.png)
   
@@ -60,14 +60,37 @@ Alternatively feel free to leave a comment or open an issue on GitHub
   If enabled plugin will display current session time.
   
   - Idle Time-  
-  If enabled plugin will display your idle time.
+  If enabled plugin will display your idle time.  
+  
+  
+- **Boss Goals Settings**
 
+  To set a Boss Goal right click on the Boss Goals side panel and set a goal.  
+  To disable or reset a Boss Goal, right click on the Boss Goals side panel and reset Boss Goal.
+
+  - Display Boss Goals Overlay-  
+  Enables the on-screen overlay for your boss goals.                                         
+  ![Imgur Image](https://i.imgur.com/y360q7x.png)
+  
+  - Display Boss Goals Panel-  
+  Enables the Boss Goals panel on the plugin side panel  
+  
+  - Display Relative Kills-  
+  Enables displaying your boss goals relative to your kc Ex.(if your start kc and end kc are 100 kills apart it will show 0 as your start and 100 as your end)  
+  
+  - Boss Goals Top-  
+  Lets your choose what to display on the top line of the on screen boss goals overaly    
+
+  - Boss Goals Bottom-  
+  Lets your choose what to display on the Bottom line of the on screen boss goals overaly  
+
+    
 
 - **General Settings**
 
   - Side Panel-
   Enables or Disables the side panel   
-  ![Imgur Image](https://i.imgur.com/1grrmmS.png)
+  ![Imgur Image](https://i.imgur.com/bsBkNXQ.png)
     - Actual-
     this is your bossing info clculated with idle time taken into account.
     - Virtual-
@@ -145,6 +168,11 @@ Alternatively feel free to leave a comment or open an issue on GitHub
     - ADDED auto resume on next kill when plugin is paused
     - Revamp how sessions are switched
     - Remove integrity checker (not needed anymore)
+    
+- **Version 1.5**   
+    - ADDED Boss Goals feature
+    - small change to how icons are postioned
+    - a few small backend changes, not notable.
     
     
     
