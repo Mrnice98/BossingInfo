@@ -1229,6 +1229,13 @@ public class KphPlugin extends Plugin
         int startOfTime = trimmedMessage.indexOf(">");
         int lastOfTime = trimmedMessage.indexOf("<");
         String sub = trimmedMessage.substring(startOfTime + 1, lastOfTime);
+
+        if(sub.contains("."))
+        {
+            int endOfUsefulTime = sub.indexOf(".");
+            sub = sub.substring(0, endOfUsefulTime);
+        }
+
         sub = sub.replace(":","");
         switch (sub.length())
         {
