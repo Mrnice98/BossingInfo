@@ -63,7 +63,7 @@ enum KphBossInfo
     ENORMOUS_TENTACLE("Enormous Tentacle",ItemID.PET_KRAKEN,0,220,-1,"not included"),
     THERMY("Thermy",ItemID.PET_SMOKE_DEVIL,0,220,-1,"Your Thermonuclear Smoke Devil kill count is:"),
     THERMONUCLEAR_SMOKE_DEVIL("Thermonuclear smoke devil",ItemID.PET_SMOKE_DEVIL,0,220,-1,"duplicate identifier"),
-    CERBERUS("Cerberus",ItemID.HELLPUPPY,0,40,-1,"Your Cerberus kill count is:"),
+    CERBERUS("Cerberus",ItemID.HELLPUPPY,0,120,-1,"Your Cerberus kill count is:"),
     KING_BLACK_DRAGON("King Black Dragon",ItemID.PRINCE_BLACK_DRAGON,0,120,-1,"Your King Black Dragon kill count is:"),
     SCORPIA("Scorpia",ItemID.SCORPIAS_OFFSPRING,0,120,-1,"Your Scorpia kill count is:"),
     CHAOS_FANATIC("Chaos Fanatic",ItemID.ANCIENT_STAFF,0,120,-1,"Your Chaos Fanatic kill count is:"),
