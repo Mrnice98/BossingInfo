@@ -1,5 +1,6 @@
 package com.killsperhour;
 
+import com.killsperhour.FileReadWriter;
 import net.runelite.api.Client;
 import net.runelite.api.ItemID;
 import net.runelite.client.game.ItemManager;
@@ -32,7 +33,7 @@ class KphBossGoalsOverlay extends OverlayPanel
     private final ItemManager itemManager;
 
     @Inject
-    private KphBossGoalsOverlay(Client client, KphConfig config, KphPlugin plugin, ItemManager itemManager, FileReadWriter fileRW)
+    private KphBossGoalsOverlay(Client client, KphConfig config,KphPlugin plugin, ItemManager itemManager, FileReadWriter fileRW)
     {
         super(plugin);
         setPosition(OverlayPosition.TOP_LEFT);
@@ -178,7 +179,7 @@ class KphBossGoalsOverlay extends OverlayPanel
                 .build();
 
 
-        KphBossInfo kphBossInfo =  KphBossInfo.find(plugin.sessionNpc);
+       KphBossInfo kphBossInfo =  KphBossInfo.find(plugin.sessionNpc);
 
         if(kphBossInfo != null)
         {
@@ -267,6 +268,8 @@ class KphBossGoalsOverlay extends OverlayPanel
         }
 
         iconAndInfoPanel.getChildren().clear();
+
+
         this.createPanels();
 
         graphics.setFont(FontManager.getRunescapeSmallFont());

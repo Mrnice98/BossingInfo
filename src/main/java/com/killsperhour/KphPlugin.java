@@ -25,7 +25,8 @@
 package com.killsperhour;
 
 import com.google.inject.Provides;
-
+import com.killsperhour.*;
+import com.sun.jna.platform.FileUtils;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.*;
@@ -33,6 +34,7 @@ import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.HitsplatApplied;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatCommandManager;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
@@ -40,24 +42,33 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.ItemStack;
+import net.runelite.client.game.LootManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.loottracker.LootReceived;
 import net.runelite.client.ui.ClientToolbar;
+import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.http.api.loottracker.LootRecordType;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import javax.inject.Inject;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -99,13 +110,20 @@ public class KphPlugin extends Plugin
     private ClientToolbar clientToolbar;
 
     @Inject
-    private FileReadWriter fileReadWriter;
+    private FileReadWriter fileRW;
 
     @Inject
     private KphBossGoalsOverlay kphBossGoalsOverlay;
 
     @Getter
     private KphPanel panel;
+
+    @Inject
+    private LootManager lootManager;
+
+    @Inject
+    private ClientThread clientThread;
+
 
     private KphInfobox infobox;
 
@@ -158,6 +176,8 @@ public class KphPlugin extends Plugin
     Instant krakenStart;
 
 
+    Collection<ItemStack> itemStacks;
+
 
     int lastKillTotalTime_0; //no-display bosses
     int lastKillTotalTime_1; //display bosses
@@ -178,19 +198,8 @@ public class KphPlugin extends Plugin
 
     int lastAttkTimeout = 99999;
 
-
-
     int startKC;
     int endKC;
-
-
-
-    public void test()
-    {
-        startKC = fileReadWriter.startKc;
-        endKC = fileReadWriter.endKc;
-    }
-
 
 
 
@@ -205,14 +214,35 @@ public class KphPlugin extends Plugin
     private List<String> blackList = new ArrayList();
 
 
+    // for some reason this needs to be im not sure why, but i would like to move to the bossids file. need to look into currently works tho
+    // for some reason this needs to be im not sure why, but i would like to move to the bossids file. need to look into currently works tho
+    //Map<String, Integer> bossIcon = new HashMap<String, Integer>();
 
-    //need to make a way to reset the first kill time if the boss is not hit within 10-15sec or something, with an exception for corp and sire.
-
+    //need to make a way to reset the first kill time if the boss is not hit within 10-15sec or something, with an execption for corp and sire.
 
 
 
 //                                                OPERATIONAL METHODS USED TO POWER THE PLUGIN
 //######################################################################################################################################################
+
+
+    String bossName;
+
+
+    @Subscribe
+    public void onLootReceived(final LootReceived event)
+    {
+        if (event.getType() != LootRecordType.NPC && event.getType() != LootRecordType.EVENT)
+        {
+            return;
+        }
+        itemStacks = event.getItems();
+        bossName = event.getName();
+        fileRW.lootReceived();
+    }
+
+
+
 
 
     //Does what it says
@@ -286,6 +316,13 @@ public class KphPlugin extends Plugin
                 panel.bossGoalsPanel.setVisible(config.displayBossGoalsPanel());
                 break;
 
+            case "Loot Display":
+                if(!panel.fetchedInfoPanel.isShowing())
+                {
+                    clientThread.invoke(() -> panel.updateLootGrid(panel.lootDisplayMap()));
+                }
+                break;
+
         }
 
     }
@@ -299,17 +336,13 @@ public class KphPlugin extends Plugin
            attkCount = 0;
            delayTicks = 0;
            nullStartTimesForSpecialBosses();
-
        }
-
 
         if(gameStateChanged.getGameState() == GameState.LOGIN_SCREEN)
        {
            sessionPause();
        }
-
     }
-
 
 
     @Subscribe
@@ -318,8 +351,6 @@ public class KphPlugin extends Plugin
         Player player = client.getLocalPlayer();
         assert player != null;
 
-        //this delay is needed as if a player hops worlds, the chat is reloaded and the kills per session would 2x if not for the delay to stop the plugin from reading them.
-        //if there is a command like !end in the chat that will still be read
         if(delayTicks < 5)
         {
             return;
@@ -328,21 +359,23 @@ public class KphPlugin extends Plugin
         {
             canRun = false;
             this.message = chatMessage.getMessage();
-
             chatMessageFilter();
-
             sMethods.sireTimeClac();
-            //stops plugin from reading chat when paused
             if(paused)
             {
                 return;
             }
             bossKc();
             bossKillTime();
-
             chatMessageQueue();
+
         }
+
     }
+
+
+
+
 
 
 
@@ -397,8 +430,6 @@ public class KphPlugin extends Plugin
     }
 
 
-
-    //private final List<String> noDisplayBosses = Arrays.asList("Giant Mole", "the nightmare");
     @Subscribe
     public void onHitsplatApplied(HitsplatApplied hitsplatApplied)
     {
@@ -409,13 +440,11 @@ public class KphPlugin extends Plugin
             if(hitsplatApplied.getHitsplat().isMine())
             {
                 lastAttackedBoss = npc;
-                System.out.println(lastAttackedBoss.getName());
 
-                KphBossInfo kphBossInfo = KphBossInfo.find(lastAttackedBoss.getName()); //this should work
+                KphBossInfo kphBossInfo = KphBossInfo.find(lastAttackedBoss.getName());
 
                 if(kphBossInfo != null && kphBossInfo.getDisplayType() == 0)
                 {
-                    //test stuff,
                     lastAttkTimeout = 0;
                     lastValidBoss = lastAttackedBoss;
 
@@ -453,37 +482,31 @@ public class KphPlugin extends Plugin
     {
         if(sMethods.dagChecker())
         {
-            System.out.println("dag time used");
             killTimerStart = sMethods.dagTimeClac();
             return;
         }
         if(sMethods.barrowsChecker())
         {
-            System.out.println("barrows time used");
             killTimerStart = sMethods.barrowsTimeClac();
             return;
         }
         if(sMethods.sireChecker() && sireStart != null)
         {
-            System.out.println("sire time used");
             killTimerStart = sireStart;
             return;
         }
         if(sMethods.krakenChecker())
         {
-            System.out.println("kraken time used");
             killTimerStart = sMethods.krakenTimeClac();
             return;
         }
         else
         {
-            System.out.println("other time used");
             killTimerStart = Instant.now();
         }
     }
 
 
-    //resets the attkcount when the boss you are attking dies
     int stoper = 0;
     public void bossKilled()
     {
@@ -491,15 +514,9 @@ public class KphPlugin extends Plugin
         {
             if(lastValidBoss.isDead() && stoper == 0)
             {
-                //will need to clear the vetion stopper when session changes or ends
-                //can do a smimple counter which says vition killed once 1 and then if he is killed 2 times to let it reset
-                                                     //fisrt form
-                if(lastValidBoss.getId() != NpcID.KALPHITE_QUEEN_963 && lastValidBoss.getId() != NpcID.VETION_REBORN ) //is possible that this need to be reborn version as it seems that how the client reads it
+                if(lastValidBoss.getId() != NpcID.KALPHITE_QUEEN_963 && lastValidBoss.getId() != NpcID.VETION_REBORN )
                 {
-                    System.out.println("attk count set to 0");
-
-                    sMethods.dagTimeClearTwo(); //this will reset whichecer dag just died, may cause issues due to clearing time before it is used. needs test. !!!!!
-
+                    sMethods.dagTimeClearTwo();
                     attkCount = 0;
                 }
                 stoper = 1;
@@ -539,7 +556,7 @@ public class KphPlugin extends Plugin
 
         if(attkCount > 0 || timesAreNotNull())
         {
-            lastAttkTimeout++; //test stuff
+            lastAttkTimeout++;
 
             if(lastAttkTimeout == attkTimeout)
             {
@@ -614,7 +631,7 @@ public class KphPlugin extends Plugin
     {
         panel = (KphPanel) injector.getInstance(KphPanel.class);
         panel.sidePanelInitializer();
-        icon = ImageUtil.getResourceStreamFromClass(getClass(), "/icon.png");
+        icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
         navButton = NavigationButton.builder().tooltip("Bossing Info").icon(icon).priority(config.sidePanelPosition()).panel(panel).build();
         clientToolbar.addNavigation(navButton);
     }
@@ -645,10 +662,7 @@ public class KphPlugin extends Plugin
         {
             if(Arrays.equals(client.getMapRegions(), fightCaveRegion) || Arrays.equals(client.getMapRegions(), infernoRegion))
             {
-                //for some reason the timers plugin does not like when i run this as a test, i think its bc im still inside the cave not sure
                 timeMessage = message;
-
-                System.out.println("fight caves/inferno");
                 return 0;
             }
         }
@@ -706,7 +720,7 @@ public class KphPlugin extends Plugin
 
         if(killsThisSession == 1)
         {
-            sessionNpc = bossName; //must make sure all boss identifiers set session npc before the sessioninitalizer
+            sessionNpc = bossName; //must make sure all boss identifiers set session npc before the session initalizer
             sessionInitializer();
         }
         currentBoss = bossName;
@@ -899,7 +913,9 @@ public class KphPlugin extends Plugin
         addInfoBox();
         panel.setBossIcon(sessionNpc);
         startTime = Instant.now();
+
     }
+
 
 
     //ends the session setting all values to null / zero or equivelant.
@@ -923,6 +939,9 @@ public class KphPlugin extends Plugin
             totalBossKillTime = 0;
             totalKillTime = 0;
 
+
+
+
             killCount = 0;
 
             fastestKill = 9999999;
@@ -940,6 +959,8 @@ public class KphPlugin extends Plugin
 
     public void reset()
     {
+
+        fileRW.sessionItemDrops.clear();
         paused = false;
         calcMode = 0;
         pauseTime = 0;
@@ -955,7 +976,7 @@ public class KphPlugin extends Plugin
 
         nullStartTimesForSpecialBosses();
 
-        fileReadWriter.resetStartAndEndKc();
+        fileRW.resetStartAndEndKc();
 
         timeoutStart = Instant.now();
         totalBossKillTime = bossKillTime();
@@ -1160,7 +1181,7 @@ public class KphPlugin extends Plugin
         {
             if(canRun)
             {
-                fileReadWriter.createAndUpdate();
+                fileRW.createAndUpdate();
                 panel.setHistoricalInfo();
                 panel.updateBossGoalsPanel();
                 canRun = false;

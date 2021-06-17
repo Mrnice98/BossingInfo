@@ -85,7 +85,7 @@ public interface KphConfig extends Config
 
     @ConfigItem(
             position = 2,
-            keyName = "Display Average Kill Time",
+            keyName = "Average Kill Time",
             name = "Average Kill Time",
             description = "Display Average Kill Time",
             section = displaySection
@@ -127,7 +127,7 @@ public interface KphConfig extends Config
             description = "Toggles the display for Idle time, Only works if 'Account for Idle' is enabled ",
             section = displaySection
     )
-    default boolean displayIdleTime() { return true; }
+    default boolean displayIdleTime() { return false; }
 
 
 
@@ -256,6 +256,7 @@ public interface KphConfig extends Config
     default int timeoutTime() { return 0; }
 
 
+
     //traditional = integer math, same as round down
     enum KphMethod
     {
@@ -273,6 +274,21 @@ public interface KphConfig extends Config
             section = generalSettings
     )
     default KphMethod kphMethod() { return KphMethod.PRECISE; }
+
+    enum LootDisplay
+    {
+        SESSION,
+        ALL_TIME,
+    }
+
+    @ConfigItem(
+            position = 5,
+            keyName = "Loot Display",
+            name = "Loot Display",
+            description = "Allows you to choose the method KPH calculated via",
+            section = generalSettings
+    )
+    default LootDisplay lootDisplay() { return LootDisplay.SESSION; }
 
     enum DksSelector
     {

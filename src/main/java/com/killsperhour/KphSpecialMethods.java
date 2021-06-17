@@ -1,28 +1,7 @@
-/*
- * Copyright (c) 2020, MrNice98
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 package com.killsperhour;
+
+import com.killsperhour.KphConfig;
+import com.killsperhour.KphPlugin;
 
 import javax.inject.Inject;
 import java.time.Instant;
@@ -153,6 +132,7 @@ public class KphSpecialMethods
 
     public void barrowsTimeClear()
     {
+        System.out.println("barrows start set to null");
         plugin.barrowsStart = null;
     }
 
@@ -216,15 +196,15 @@ public class KphSpecialMethods
     public void dagTimeClear()
     {
 
-        if(plugin.message.contains(plugin.rexMessage) || plugin.rexAttkTimout == 20)
+        if(plugin.message.contains(plugin.rexMessage) || plugin.rexAttkTimout == 10)
         {
             plugin.rexStart = null;
         }
-        if(plugin.message.contains(plugin.primeMessage) || plugin.primeAttkTimout == 20)
+        if(plugin.message.contains(plugin.primeMessage) || plugin.primeAttkTimout == 10)
         {
             plugin.primeStart = null;
         }
-        if(plugin.message.contains(plugin.supremeMessage) || plugin.supremeAttkTimout == 20)
+        if(plugin.message.contains(plugin.supremeMessage) || plugin.supremeAttkTimout == 10)
         {
             plugin.supremeStart = null;
         }
@@ -239,17 +219,17 @@ public class KphSpecialMethods
             switch (plugin.lastValidBoss.getName())
             {
                 case "Dagannoth Prime":
-                    System.out.println("prime claer");
+                    System.out.println("prime caler");
                     plugin.primeStart = null;
                     break;
 
                 case "Dagannoth Rex":
-                    System.out.println("rex clear");
+                    System.out.println("rex clearas");
                     plugin.rexStart = null;
                     break;
 
                 case "Dagannoth Supreme":
-                    System.out.println("supreme clear");
+                    System.out.println("supreme clears");
                     plugin.supremeStart = null;
                     break;
             }

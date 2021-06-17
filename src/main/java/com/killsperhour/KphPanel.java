@@ -1,41 +1,15 @@
-/* Copyright (c) 2020, MrNice98
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package com.killsperhour;
 
 
 import net.runelite.api.ItemID;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.PluginErrorPanel;
 import net.runelite.client.ui.components.ProgressBar;
-import net.runelite.client.util.AsyncBufferedImage;
-import net.runelite.client.util.ColorUtil;
-import net.runelite.client.util.ImageUtil;
-import net.runelite.client.util.SwingUtil;
+import net.runelite.client.util.*;
 
 import javax.inject.Inject;
 import javax.swing.*;
@@ -44,11 +18,17 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 class KphPanel extends PluginPanel {
 
@@ -95,10 +75,15 @@ class KphPanel extends PluginPanel {
     private final JPanel buttonIconTab;
     private final JPanel icon;
     private final JPanel fetchedIcon;
-    private final JPanel fetchedInfoPanel;
     private final JPanel closeAndTrashButtonPanel;
     private final JPanel sidePanel;
     private final JPanel titlePanel;
+            final JPanel fetchedInfoPanel;
+
+    private final JPanel lootPanel;
+
+    private final JPanel lootHeaderPanel;
+
     private final JPanel bossInfoPanel;
     private final JPanel historicalInfoPanel;
     private final JPanel lookupInfoPanelHeader;
@@ -119,7 +104,7 @@ class KphPanel extends PluginPanel {
                   JButton switchModeButton = new JButton();
 
     final SpinnerNumberModel startKcModel = new SpinnerNumberModel(0, 0, 10000000, 1);
-    final SpinnerNumberModel endKcModel = new SpinnerNumberModel(0, 0, 10000000, 1);
+    final SpinnerNumberModel endKcModel = new SpinnerNumberModel(0, 0, 10000000, 5); //change step size to 5
 
     private final JSpinner startKcSpinner = new JSpinner(startKcModel);
     private final JSpinner endKcSpinner = new JSpinner(endKcModel);
@@ -140,6 +125,8 @@ class KphPanel extends PluginPanel {
     private static final ImageIcon DISCORD_HOVER;
     private static final ImageIcon GITHUB_ICON;
     private static final ImageIcon GITHUB_HOVER;
+    private static final ImageIcon VISIBLE_ICON;
+    private static final ImageIcon INVISABLE_ICON;
 
     private AsyncBufferedImage fetchedBossSprite;
 
@@ -153,6 +140,9 @@ class KphPanel extends PluginPanel {
 
     @Inject
     private ItemManager itemManager;
+
+    @Inject
+    private ClientThread clientThread;
 
 
     @Inject
@@ -170,12 +160,10 @@ class KphPanel extends PluginPanel {
         this.historicalInfoPanel = new JPanel();
         this.lookupInfoPanelHeader = new JPanel();
         this.buttonIconTab = new JPanel();
-
+        this.lootPanel = new JPanel();
+        this.lootHeaderPanel = new JPanel();
         this.bossGoalsPanel = new JPanel();
-
         this.icon = new JPanel();
-
-
         this.plugin = plugin;
         this.config = config;
         this.fileRW = fileRW;
@@ -191,6 +179,8 @@ class KphPanel extends PluginPanel {
         this.sidePanel.add(this.buildBossInfoPanel());
         this.sidePanel.add(this.buildBossGoalsPanel());
         this.sidePanel.add(this.buildButtonIconTab());
+        this.sidePanel.add(this.buildGridTest());
+        this.sidePanel.add(this.buildLootPanel());
         this.sidePanel.add(this.buildPauseAndResumebuttons());
         this.sidePanel.add(this.buildSessionEndButton());
         this.sidePanel.add(this.buildSupportbuttons());
@@ -209,6 +199,364 @@ class KphPanel extends PluginPanel {
     }
 
 
+    JToggleButton lootHeaderButtonPanel = new JToggleButton();
+    JToggleButton hideItemButton = new JToggleButton();
+    JLabel gpPerHourLabel = new JLabel(htmlLabel("Gp/Hr: ","N/A"));
+    JLabel gpPerKill = new JLabel(htmlLabel("Gp/Kill: ","N/A"));
+    JLabel totalGpLabel = new JLabel(htmlLabel("Total Gp: ","N/A"));
+    JLabel killsTrackedLabel = new JLabel(htmlLabel("Kills: ","N/A"));
+    JPanel masterPanel = new JPanel();
+
+
+    private JPanel buildGridTest()
+    {
+
+        masterPanel.setLayout(new BorderLayout());
+
+        lootHeaderPanel.setLayout(new BorderLayout());
+        lootHeaderPanel.setBorder(new EmptyBorder(0,0,0,0));
+        lootHeaderPanel.setBorder(new MatteBorder(1, 1, 1, 1, new Color(57, 57,57)));
+
+
+        JPanel lootHeaderSubContainer = new JPanel();
+        JPanel bottomInfo = new JPanel();
+        JPanel topInfo = new JPanel();
+
+
+        lootHeaderButtonPanel.setLayout(new GridLayout(2,0,0,0));
+        lootHeaderSubContainer.setLayout(new BorderLayout());
+        lootHeaderSubContainer.setBorder(new MatteBorder(1, 1, 1, 1, new Color(57, 57,57)));
+        bottomInfo.setLayout(new GridLayout(0,2,0,0));
+        topInfo.setLayout(new BorderLayout());
+
+
+        lootHeaderSubContainer.setBorder(new EmptyBorder(5,0,0,0));
+
+        lootHeaderButtonPanel.setPreferredSize(new Dimension(200,35));
+
+        lootHeaderButtonPanel.setBorder(new EmptyBorder(4,5,0,5));
+
+        hideItemButton.setIcon(INVISABLE_ICON);
+        hideItemButton.setSelectedIcon(VISIBLE_ICON);
+
+
+
+        gpPerHourLabel.setFont(FontManager.getRunescapeSmallFont());
+        gpPerKill.setFont(FontManager.getRunescapeSmallFont());
+        totalGpLabel.setFont(FontManager.getRunescapeSmallFont());
+        killsTrackedLabel.setFont(FontManager.getRunescapeSmallFont());
+
+
+        SwingUtil.removeButtonDecorations(hideItemButton);
+        SwingUtil.removeButtonDecorations(lootHeaderButtonPanel);
+        lootHeaderButtonPanel.setRolloverEnabled(false);
+
+        hideItemButton.setPreferredSize(new Dimension(20,18));
+
+        hideItemButton.addActionListener(e -> clientThread.invoke(() -> updateLootGrid(lootDisplayMap())));
+
+        lootHeaderButtonPanel.addActionListener(e -> collapseLoot());
+
+        gpPerKill.setForeground(Color.WHITE);
+
+        topInfo.setBorder(new EmptyBorder(0,0,0,0));
+
+        topInfo.add(gpPerKill,"West");
+        topInfo.add(hideItemButton,"East");
+
+
+        killsTrackedLabel.setBorder(new EmptyBorder(0,48,0,0));
+
+        topInfo.add(killsTrackedLabel,"Center");
+        bottomInfo.add(gpPerHourLabel);
+        bottomInfo.add(totalGpLabel);
+        topInfo.setBackground(new Color(30, 30, 30));
+        bottomInfo.setBackground(new Color(30, 30, 30));
+
+        lootHeaderButtonPanel.add(topInfo,"North");
+        lootHeaderButtonPanel.add(bottomInfo,"South");
+        lootHeaderButtonPanel.setBackground(new Color(30, 30, 30));
+        lootHeaderPanel.setBackground(new Color(30, 30, 30));
+        lootHeaderPanel.add(lootHeaderButtonPanel);
+
+        masterPanel.add(lootHeaderSubContainer,"North");
+        masterPanel.add(lootHeaderPanel,"South");
+
+        return masterPanel;
+
+    }
+
+
+
+    public Map<Integer,Integer> lootDisplayMap()
+    {
+        if(plugin.getPanel().fetchedInfoPanel.isShowing())
+        {
+           return fileRW.fetchedAllItemDrops;
+        }
+        else if((!plugin.getPanel().fetchedInfoPanel.isShowing()) && (config.lootDisplay() == KphConfig.LootDisplay.ALL_TIME))
+        {
+            return fileRW.allItemDrops;
+        }
+        else
+        {
+            return fileRW.sessionItemDrops;
+        }
+    }
+
+
+
+    static String doubleFormatNumber(double num)
+    {
+        DecimalFormat twoP = new DecimalFormat("#.##");
+        DecimalFormat oneP = new DecimalFormat("#.#");
+        if (num >= 1000000000) { num = num / 1000000000; return twoP.format(num) + "B"; } //1B
+        if (num >= 1000000) { num = num / 1000000; return twoP.format(num) + "M"; } //1M
+        if (num >= 1000) { num = num / 1000; return oneP.format(num) + "K"; } //1K
+        else { return oneP.format(num); }
+    }
+
+    public double convertToGpPerHour(int kills,double Kph)
+    {
+      return  ((fileRW.totalGp / kills) * Kph);
+    }
+
+    public double convertToGpPerKill(int kills)
+    {
+        return  (fileRW.totalGp / kills);
+    }
+
+
+    public void updateLootHeaderInfo(int kills, double Kph)
+    {
+        FontMetrics fontMetrics = getGraphics().getFontMetrics(FontManager.getRunescapeSmallFont());
+        totalGpLabel.setText(htmlLabel("Total Gp: ",doubleFormatNumber(fileRW.totalGp)));
+        gpPerHourLabel.setText(htmlLabel("GP/Hr: ",doubleFormatNumber(convertToGpPerHour(kills,Kph))));
+        gpPerKill.setText(htmlLabel("GP/Kill: ",doubleFormatNumber(convertToGpPerKill(kills))));
+        if (fileRW.totalGp == 0) { kills = 0; }
+        killsTrackedLabel.setText(htmlLabel("Kills: ", String.valueOf(kills)));
+        killsTrackedLabel.setBorder(new EmptyBorder(0,  535 - fontMetrics.stringWidth(gpPerKill.getText())  ,0,0));
+    }
+
+
+    public void collapseLoot()
+    {
+        lootPanel.setVisible(!lootHeaderButtonPanel.isSelected());
+    }
+
+
+
+
+    private static final int ITEMS_PER_ROW = 5;
+    private static final Dimension ITEM_SIZE = new Dimension(40, 40);
+
+    public void updateLootGrid(Map<Integer,Integer> lootMap)
+    {
+
+        for (Map.Entry<Integer, Integer> entry : lootMap.entrySet())
+        {
+            double itemPrice = itemManager.getItemPrice(entry.getKey());
+            itemPrice = itemPrice * entry.getValue();
+            fileRW.itemAndTotalPrice.put(entry.getKey(),itemPrice);
+        }
+        SwingUtilities.invokeLater(() -> lootGrid(lootMap));
+    }
+
+    JPanel containerPanel = new JPanel();
+
+
+    public void lootGrid(Map<Integer,Integer> lootMap)
+    {
+        JPanel containerCurrent = new JPanel();
+
+        HashMap<Integer, Integer> sorted = fileRW.sortByValue(fileRW.itemAndTotalPrice,lootMap);
+
+        int totalItems;
+        if(hideItemButton.isSelected())
+        {
+            totalItems = sorted.keySet().size();
+        }
+        else
+        {
+            totalItems = sorted.keySet().size() - fileRW.ignored.size();
+        }
+
+
+        containerPanel.setBorder(new EmptyBorder(2, 2, 5, 2));
+        containerCurrent.setBorder(new EmptyBorder(2, 2, 5, 2));
+
+
+        // Calculates how many rows need to be display to fit all items
+        final int rowSize = ((totalItems % ITEMS_PER_ROW == 0) ? 0 : 1) + totalItems / ITEMS_PER_ROW;
+        containerPanel.setLayout(new GridLayout(rowSize, ITEMS_PER_ROW, 1, 1));
+        containerCurrent.setLayout(new GridLayout(rowSize, ITEMS_PER_ROW, 1, 1));
+
+
+       // Create stacked items from the item list, calculates total price and then displays all the items in the UI.
+        for (Integer key : sorted.keySet())
+        {
+            final JPanel slot = new JPanel();
+            slot.setLayout(new GridLayout(1, 1, 0, 0));
+            slot.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+            slot.setPreferredSize(ITEM_SIZE);
+
+            final JLabel itemLabel = new JLabel();
+
+            clientThread.invoke(() -> itemLabel.setToolTipText(buildToolTip(key,lootMap)));
+            itemLabel.setVerticalAlignment(SwingConstants.CENTER);
+            itemLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+            AsyncBufferedImage itemImage = itemManager.getImage( key,  sorted.get(key),  sorted.get(key) > 1);
+            itemImage.addTo(itemLabel);
+
+
+            final JPopupMenu popupMenu = new JPopupMenu();
+            itemLabel.setComponentPopupMenu(popupMenu);
+
+            final JMenuItem toggle = new JMenuItem("Toggle item");
+            toggle.addActionListener(e ->
+            {
+                if(fileRW.ignored.contains(key))
+                {
+                    fileRW.ignored.remove(key);
+                }
+                else
+                {
+                    fileRW.ignored.add(key);
+                }
+
+                fileRW.writeIgnoredListToFile(provideBossName());
+                clientThread.invoke(() -> updateLootGrid(lootMap));
+            });
+
+
+
+            if(!fileRW.ignored.contains(key) || hideItemButton.isSelected())
+            {
+                popupMenu.add(toggle);
+
+                if(fileRW.ignored.contains(key))
+                {
+                    Runnable addTransparency = () ->
+                    {
+                        BufferedImage transparentImage = ImageUtil.alphaOffset(itemImage, .3f);
+                        itemLabel.setIcon(new ImageIcon(transparentImage));
+                    };
+                    itemImage.onLoaded(addTransparency);
+                    addTransparency.run();
+                }
+                slot.add(itemLabel);
+                containerCurrent.add(slot);
+
+            }
+
+        }
+
+
+
+        if(totalItems < 5 || totalItems % 5 != 0)
+        {
+            int extraBoxes;
+            if(totalItems % 5 != 0 && totalItems >= 5)
+            {
+                int i = totalItems;
+                while (i % 5 != 0)
+                {
+                    i++;
+                }
+                extraBoxes = i - totalItems;
+            }
+            else
+            {
+                extraBoxes = 5 - totalItems;
+            }
+
+            for (int i = 0; i < extraBoxes; i++)
+            {
+                final JPanel slot = new JPanel();
+                slot.setLayout(new GridLayout(1, 1, 0, 0));
+                slot.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+                slot.setPreferredSize(ITEM_SIZE);
+
+                containerCurrent.add(slot);
+            }
+        }
+
+        lootPanel.remove(containerPanel);
+        this.containerPanel = containerCurrent;
+        lootPanel.add(containerPanel);
+
+        fileRW.getTotalPrice();
+
+
+
+
+
+
+        //clean this up. make sure it does not trigger twice causes issues
+
+        if(plugin.getPanel().fetchedInfoPanel.isShowing())
+        {
+            updateLootHeaderInfo(fileRW.lootKillsTracked,fileRW.fetchedKillsPerHour);
+        }
+
+        if((!plugin.getPanel().fetchedInfoPanel.isShowing()) && (config.lootDisplay() == KphConfig.LootDisplay.ALL_TIME))
+        {
+            fileRW.setFilename(plugin.currentBoss);
+            fileRW.fetchLookupInfo();
+            updateLootHeaderInfo(fileRW.lootKillsTracked,fileRW.fetchedKillsPerHour);
+        }
+
+        if((!plugin.getPanel().fetchedInfoPanel.isShowing()) && (config.lootDisplay() == KphConfig.LootDisplay.SESSION))
+        {
+            updateLootHeaderInfo(plugin.killsThisSession,Double.parseDouble(plugin.formatKPH()));
+        }
+
+
+        lootPanel.revalidate();
+        lootPanel.repaint();
+    }
+
+
+    public String provideBossName()
+    {
+        if(plugin.getPanel().fetchedInfoPanel.isShowing())
+        {
+            return searchInput;
+        }
+        else
+        {
+            return plugin.currentBoss;
+        }
+    }
+
+    private String buildToolTip(int key,Map<Integer,Integer> lootMap)
+    {
+        final String name = itemManager.getItemComposition(key).getName();
+        final int quantity = lootMap.get(key);
+        final long price = itemManager.getItemPrice(key);
+
+        return "<html>" + name + " x " + QuantityFormatter.formatNumber(quantity)
+                + "<br/>Price: " + QuantityFormatter.quantityToStackSize(price)
+                + "<br/>Total: " + QuantityFormatter.quantityToStackSize(quantity * price) + "</html>";
+    }
+
+
+
+
+    private JPanel buildLootPanel()
+    {
+        lootPanel.setLayout(new BorderLayout());
+        lootPanel.setBorder(new EmptyBorder(0, 0, 8, 0));
+        lootPanel.setBorder(new MatteBorder(0, 0, 1, 0, new Color(37, 125, 141)));
+        return lootPanel;
+    }
+
+
+
+
+
+
 
     int killsDone;
     int totalKillsToGet;
@@ -217,7 +565,7 @@ class KphPanel extends PluginPanel {
     double percentDone;
 
     //this empty label is needed to make sure the txt is centered on the progress bar *don't ask me how or why it works, its magic*
-    private final JLabel magicCenteringLabel = new JLabel();
+    //private final JLabel magicCenteringLabel = new JLabel();
 
     public void updateBossGoalsPanel()
     {
@@ -238,7 +586,7 @@ class KphPanel extends PluginPanel {
             goalInfoPanel.setBorder(new EmptyBorder(5, 0, 0, 17));
             progressBar.setLeftLabel("");
             progressBar.setRightLabel("");
-            progressBar.setCenterLabel("Set a boss goal to activate");
+            progressBar.setCenterLabel("Set a goal");
             progressBar.setValue(0);
             progressBar.setDimmed(false);
             return;
@@ -292,7 +640,7 @@ class KphPanel extends PluginPanel {
         }
 
         int length;
-        //use this to measure width *****************************************
+
         FontMetrics fontMetrics = getGraphics().getFontMetrics(FontManager.getRunescapeSmallFont());
         boolean killsDoneIsLonger = (fontMetrics.stringWidth(killsLeftLabel.getText()) < fontMetrics.stringWidth(killsDoneLabel.getText()));
 
@@ -302,11 +650,6 @@ class KphPanel extends PluginPanel {
         int offset;
         offset = 521 - length;
         goalInfoPanel.setBorder(new EmptyBorder(5, 0, 0, offset));
-
-
-        //this empty label is needed to make sure the txt is centered on the progress bar *don't ask me how or why it works, its magic*
-        //this needs to be added here not when it is first built otherwise it will override the % text
-        progressBar.add(magicCenteringLabel);
 
 
         KphBossInfo kphBossInfo = KphBossInfo.find(plugin.sessionNpc);
@@ -463,9 +806,11 @@ class KphPanel extends PluginPanel {
 
 
 
+    String searchInput;
+
     public void fetchLookupInfo()
     {
-        String searchInput = searchField.getText();
+        searchInput = searchField.getText();
 
         if(KphBossInfo.bossByWords.containsKey(searchInput.toLowerCase()))
         {
@@ -509,8 +854,8 @@ class KphPanel extends PluginPanel {
     {
         if(fileRW.fetchedFile == null || !fileRW.fetchedFile.exists())
         {
-            System.out.println("Lookup info set to null");
             setLookupInfoToNull();
+            getFetchedLoot();
             return;
         }
 
@@ -523,6 +868,24 @@ class KphPanel extends PluginPanel {
         fetchedTotalBossKc.setText(htmlLabel("Total KC: ",String.valueOf(fileRW.fetchedTotalBossKc)));
         fetchedAverageKillTime.setText(htmlLabel("Average Kill: ", plugin.timeConverter(fileRW.fetchedAverageKillTime)));
         estimatedTimeSpentBossing.setText(htmlLabel("EST Bossing Time: ", plugin.timeConverter(fileRW.estimatedTimeSpentBossing)));
+
+        getFetchedLoot();
+
+    }
+
+    public void getFetchedLoot()
+    {
+        fileRW.lootDirectory = new File(fileRW.file, "boss-loot");
+        fileRW.subDirectory = new File(fileRW.lootDirectory, searchInput + ".json");
+        fileRW.loadFetchedDropsFromMap();
+        fileRW.loadIgnoredList(searchInput);
+        if(fileRW.fetchedFile == null || !fileRW.fetchedFile.exists())
+        {
+            fileRW.fetchedAllItemDrops = new HashMap<Integer, Integer>();
+            fileRW.ignored = new ArrayList<Integer>();
+        }
+        fileRW.itemAndTotalPrice = new HashMap<Integer, Double>();
+        clientThread.invoke(() -> updateLootGrid(fileRW.fetchedAllItemDrops));
     }
 
 
@@ -538,7 +901,7 @@ class KphPanel extends PluginPanel {
         estimatedTimeSpentBossing.setText(htmlLabel("EST Bossing Time: ", "N/A"));
     }
 
-
+    
 
     private JPanel buildFetchedInfoPanel()
     {
@@ -634,6 +997,9 @@ class KphPanel extends PluginPanel {
         endKcSpinner.setPreferredSize(new Dimension(100,20));
         endKcSpinner.setMinimumSize(new Dimension(100,20));
 
+        //endKcSpinner.setToolTipText("+/- 5");
+        endKcSpinner.addChangeListener(e -> getRelativeGoal());
+
         bossGoalsInputPanel.setBorder(new EmptyBorder(0, 0, 5, 0));
         bossGoalsInputPanel.setLayout(new GridLayout(0,2,0,5));
 
@@ -658,7 +1024,7 @@ class KphPanel extends PluginPanel {
         bossGoalsInputPanel.add(endKcSpinner);
 
 
-        KphBossInfo  kphBossInfo =  KphBossInfo.find(plugin.sessionNpc);
+        KphBossInfo kphBossInfo =  KphBossInfo.find(plugin.sessionNpc);
         AsyncBufferedImage bossSprite = itemManager.getImage(kphBossInfo.getIcon());
         ImageIcon imageIcon = new ImageIcon(resizeImage(bossSprite,50,44));
 
@@ -671,37 +1037,30 @@ class KphPanel extends PluginPanel {
 
             startKC = (int) startKcSpinner.getValue();
             endKC = (int) endKcSpinner.getValue();
-
             fileRW.updateBossKCGoal();
             updateBossGoalsPanel();
-
-            System.out.println(startKC);
-            System.out.println(endKC);
         }
 
+    }
+
+    public void getRelativeGoal()
+    {
+        endKcSpinner.setToolTipText("+" + ((int) endKcSpinner.getValue() - (int) startKcSpinner.getValue()));
     }
 
     public void deleteFile()
     {
         if(fileRW.fetchedFile.exists())
         {
-
             int confirm = JOptionPane.showConfirmDialog(
                     KphPanel.this,
-                    "Are you sure you want to permanently delete " + fileRW.fetchedFile.getName(),
+                    "Are you sure you want to permanently delete these files",
                     "Warning", JOptionPane.OK_CANCEL_OPTION);
 
             if (confirm == 0)
             {
-                try
-                {
-                    Files.delete(fileRW.lookupPath);
-                }
-                catch (IOException e)
-                {
-                    System.out.println("File could not be deleted");
-                    System.out.println(fileRW.lookupPath.toString());
-                }
+               //SwingUtilities.invokeLater(this::deleteTest);
+               deleteTest();
             }
         }
         else
@@ -712,19 +1071,68 @@ class KphPanel extends PluginPanel {
     }
 
 
+    public void deleteTest()
+    {
+
+        try
+        {
+            Files.delete(fileRW.lookupPath);
+            fileRW.fetchedAllItemDrops = new HashMap<Integer, Integer>();
+            fileRW.ignored = new ArrayList<Integer>();
+
+                try
+                {
+                    Writer writer = new FileWriter(fileRW.subDirectory);
+                    writer.write("[]");
+                    writer.close();
+                }
+                catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                }
+
+
+            try
+            {
+                Writer writer = new FileWriter(fileRW.ignoreDirectory);
+                writer.write("[]");
+                writer.close();
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+
+        }
+        catch (Exception Io)
+        {
+            Io.printStackTrace();
+
+        }
+
+    }
+
+
+
+    
+
+
     public void closeBossLookupPanels()
     {
         sidePanel.remove(fetchedInfoPanel);
         sidePanel.remove(lookupInfoPanelHeader);
-
         sidePanel.add(bossInfoPanel);
         sidePanel.add(buttonIconTab);
         sidePanel.add(bossGoalsPanel);
-
         sidePanel.setComponentZOrder(bossInfoPanel,2);
         sidePanel.setComponentZOrder(bossGoalsPanel,3);
         sidePanel.setComponentZOrder(buttonIconTab,4);
+        sidePanel.setComponentZOrder(lootHeaderPanel,5);
+        sidePanel.setComponentZOrder(lootPanel,6);
         sidePanel.revalidate();
+
+        fileRW.loadIgnoredList(plugin.currentBoss);
+        clientThread.invoke(() -> updateLootGrid(lootDisplayMap()));
     }
 
     public void openBossLookupPanels()
@@ -733,21 +1141,25 @@ class KphPanel extends PluginPanel {
         sidePanel.remove(bossInfoPanel);
         sidePanel.remove(historicalInfoPanel);
         sidePanel.remove(bossGoalsPanel);
-
         sidePanel.add(lookupInfoPanelHeader);
         sidePanel.add(fetchedInfoPanel);
-
         sidePanel.setComponentZOrder(lookupInfoPanelHeader,2);
         sidePanel.setComponentZOrder(fetchedInfoPanel,3);
-        sidePanel.setComponentZOrder(pauseAndResumeButtons,4);
+        sidePanel.setComponentZOrder(lootHeaderPanel,4);
+        sidePanel.setComponentZOrder(lootPanel,5);
+        sidePanel.setComponentZOrder(pauseAndResumeButtons,6);
+        sidePanel.setComponentZOrder(sessionEndButton,7);
         dropdownButton.setSelected(false);
         sidePanel.revalidate();
+
+        fetchLookupInfo();
     }
 
 
     public void openCurrentHistoricalData()
     {
         sidePanel.add(historicalInfoPanel);
+        sidePanel.setComponentZOrder(buttonIconTab,4);
         sidePanel.setComponentZOrder(historicalInfoPanel,5);
         sidePanel.revalidate();
         fillHistoricalData();
@@ -827,19 +1239,15 @@ class KphPanel extends PluginPanel {
 
         bossInfoPanel.setBorder(new EmptyBorder(0, 0, 4, 0));
 
-        //bossInfoPanel.setBorder(new MatteBorder(0, 0, 0, 0, new Color(37, 125, 141)));
-
         JPanel sessionInfoSection = new JPanel(new GridBagLayout());
         sessionInfoSection.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 
 
         sessionInfoSection.setLayout(new GridLayout(7, 1, 0, 10));
 
-        //this controls the offset of the current boss name, useful for alinging the icon
         sessionInfoSection.setBorder(new EmptyBorder(10, 5, 3, 0));
 
         currentBossNameLabel.setFont(FontManager.getRunescapeBoldFont());
-
 
         icon.setLayout(new GridLayout(0, 2, 0, 0));
         icon.setBorder(new EmptyBorder(0, 0, 180, 150));
@@ -874,16 +1282,9 @@ class KphPanel extends PluginPanel {
         {
             KphBossInfo kphBossInfo = KphBossInfo.find(bossName);
             AsyncBufferedImage bossSprite = itemManager.getImage(kphBossInfo.getIcon());
-
             FontMetrics fontMetrics = getGraphics().getFontMetrics(FontManager.getRunescapeBoldFont());
-            //this is how the icon is positioned
-            //int offset = 150 - ((plugin.sessionNpc.length() * 8) + 6) ;
             int offset = 150 - (fontMetrics.stringWidth(plugin.sessionNpc) + 10);
-
-                                                            //if i change the bottom offset i can compensate when changeing the row number of the session info
             icon.setBorder(new EmptyBorder(0, 0, 153,offset));
-
-            //use this method when applying icons.
             bossSprite.addTo(picLabel);
         }
     }
@@ -935,7 +1336,6 @@ class KphPanel extends PluginPanel {
 
         buttonIconTab.add(dropdownButton,"West");
         buttonIconTab.add(searchButton,"East");
-
 
         return buttonIconTab;
     }
@@ -1113,7 +1513,6 @@ class KphPanel extends PluginPanel {
     public void setSessionTimeLabel()
     {
         SwingUtilities.invokeLater(() -> sessionTimeLabel.setText(htmlLabel("Session time: ",plugin.timeConverter(plugin.totalSessionTime))));
-        //sessionTimeLabel.setText("Session time: " + plugin.timeConverter(plugin.totalSessionTime));
     }
 
     public void setSessionInfo()
@@ -1126,8 +1525,6 @@ class KphPanel extends PluginPanel {
             idleTimeLabel.setText(htmlLabel("Idle Time: ",plugin.timeConverter(plugin.timeSpentIdle)));
             currentBossNameLabel.setText(plugin.sessionNpc);
             fastestKillTimeLabel.setText(htmlLabel("Fastest Kill: ",plugin.timeConverter(plugin.fastestKill)));
-
-
             if(!plugin.paused)
             {
                 currentBossNameLabel.setForeground(new Color(71, 226, 12));
@@ -1166,13 +1563,18 @@ class KphPanel extends PluginPanel {
 
     static
     {
-        BufferedImage trashPNG = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "/trash_icon.png");
-        BufferedImage closePNG = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "/close_icon.png");
-        BufferedImage searchPNG = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "/search_icon.png");
-        BufferedImage dropdownFlippedPNG = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "/dropdown_flipped_icon.png");
-        BufferedImage dropdownPNG = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "/dropdown_icon.png");
-        BufferedImage discordPNG = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "/discord_icon.png");
-        BufferedImage githubPNG = ImageUtil.getResourceStreamFromClass(KphPlugin.class, "/github_icon.png");
+        BufferedImage trashPNG = ImageUtil.loadImageResource(KphPlugin.class, "/trash_icon.png");
+        BufferedImage closePNG = ImageUtil.loadImageResource(KphPlugin.class, "/close_icon.png");
+        BufferedImage searchPNG = ImageUtil.loadImageResource(KphPlugin.class, "/search_icon.png");
+        BufferedImage dropdownFlippedPNG = ImageUtil.loadImageResource(KphPlugin.class, "/dropdown_flipped_icon.png");
+        BufferedImage dropdownPNG = ImageUtil.loadImageResource(KphPlugin.class, "/dropdown_icon.png");
+        BufferedImage discordPNG = ImageUtil.loadImageResource(KphPlugin.class, "/discord_icon.png");
+        BufferedImage githubPNG = ImageUtil.loadImageResource(KphPlugin.class, "/github_icon.png");
+        BufferedImage visiblePNG = ImageUtil.loadImageResource(KphPlugin.class, "/visible_icon.png");
+        BufferedImage invisiblePNG = ImageUtil.loadImageResource(KphPlugin.class, "/invisible_icon.png");
+
+        VISIBLE_ICON = new ImageIcon(visiblePNG);
+        INVISABLE_ICON = new ImageIcon(invisiblePNG);
 
         TRASH_ICON = new ImageIcon(trashPNG);
         TRASH_ICON_HOVER = new ImageIcon(ImageUtil.luminanceOffset(trashPNG, -80));
@@ -1196,7 +1598,5 @@ class KphPanel extends PluginPanel {
         GITHUB_HOVER = new ImageIcon(ImageUtil.luminanceOffset(githubPNG, -80));
 
     }
-
-
 
 }

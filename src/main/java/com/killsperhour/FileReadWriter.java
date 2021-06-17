@@ -1,19 +1,24 @@
 package com.killsperhour;
 
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.Setter;
 import net.runelite.api.Client;
+import net.runelite.client.callback.ClientThread;
+import net.runelite.client.game.ItemManager;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static net.runelite.client.RuneLite.RUNELITE_DIR;
 
@@ -27,6 +32,11 @@ public class FileReadWriter
 
     KphBossGoalsOverlay goalsOverlay;
 
+    @Inject
+    ItemManager itemManager;
+
+    @Inject
+    private ClientThread clientThread;
 
     @Inject
     private FileReadWriter(KphPlugin plugin, Client client)
@@ -90,17 +100,307 @@ public class FileReadWriter
 
     File fetchedFile;
 
+    Gson gson = new Gson();
+
+    Map<Integer, Integer> drops = new HashMap<Integer, Integer>();
+    Map<Integer, Integer> allItemDrops = new HashMap<Integer, Integer>();
+    Map<Integer, Integer> fetchedAllItemDrops = new HashMap<Integer, Integer>();
+    Map<Integer, Integer> sessionItemDrops = new HashMap<Integer, Integer>();
+
+    File lootDirectory;
+    File subDirectory;
+    File ignoreDirectory;
+
+
+    public int idNormalizer(int itemId)
+    {
+        switch (itemManager.getItemComposition(itemId).getName())
+        {
+            case "Clue Scroll (beginner)":
+                return 23182;
+
+            case "Clue Scroll (easy)":
+                return 2677;
+
+            case "Clue scroll (medium)":
+                return 2801;
+
+            case "Clue scroll (hard)":
+                return 2722;
+
+            case "Clue scroll (elite)":
+                return 12073;
+
+            case "Clue scroll (master)":
+                return 19835;
+
+            default:
+                return itemId;
+        }
+    }
+
+    public void buildLootMaps(List<Integer> itemIds,  List<Integer> itemQuants, Map<Integer,Integer> lootMap)
+    {
+        int i;
+        for(i = 0; i < itemIds.size(); i++)
+        {
+            int itemId = idNormalizer(itemIds.get(i));
+            drops.put(itemId,itemQuants.get(i));
+            if(lootMap.containsKey(itemId))
+            {
+                int quantity = lootMap.get(itemId);
+                quantity = quantity + drops.get(itemId);
+                lootMap.replace(itemId,quantity);
+            }
+            else
+            {
+                lootMap.putAll(drops);
+            }
+            drops.clear();
+        }
+    }
+
+    boolean bossNameMatch;
+
+    public void bossNameMatcher()
+    {
+        if(plugin.bossName.equals(plugin.currentBoss))
+        {
+            bossNameMatch = true;
+        }
+        else if(plugin.currentBoss.equals("CM Chambers") && plugin.bossName.equals("Chambers of Xeric"))
+        {
+            bossNameMatch = true;
+        }
+        else if(plugin.currentBoss.equals("Corrupted Gauntlet") && plugin.bossName.equals("The Gauntlet"))
+        {
+            bossNameMatch = true;
+        }
+        else if(plugin.currentBoss.equals("Dagannoth Kings") &&
+               (plugin.bossName.equals("Dagannoth Rex")
+             || plugin.bossName.equals("Dagannoth Prime")
+             || plugin.bossName.equals("Dagannoth Supreme")))
+        {
+            bossNameMatch = true;
+        }
+        else if(KphBossInfo.bossByWordsLoot.containsKey(plugin.bossName))
+        {
+            plugin.bossName = KphBossInfo.bossByWordsLoot.get(plugin.bossName);
+            if(plugin.bossName.equals(plugin.currentBoss))
+            {
+               bossNameMatch = true;
+            }
+        }
+        else
+        {
+            bossNameMatch = false;
+        }
+
+    }
+
+    public void lootReceived()
+    {
+        lootDirectory = new File(file, "boss-loot");
+        subDirectory = new File(lootDirectory,plugin.currentBoss + ".json");
+
+        bossNameMatcher();
+
+        if(!bossNameMatch)
+        {
+            System.out.println("miss matched name");
+            return;
+        }
+
+        loadDropsFromMap();
+
+        if(!plugin.getPanel().fetchedInfoPanel.isShowing())
+        {
+            loadIgnoredList(plugin.currentBoss);
+        }
+
+        List<Integer> id =  plugin.itemStacks.stream().map(itemStack -> itemStack.getId()).collect(Collectors.toList());
+        List<Integer> quant =  plugin.itemStacks.stream().map(itemStack -> itemStack.getQuantity()).collect(Collectors.toList());
+
+        buildLootMaps(id,quant,allItemDrops);
+        buildLootMaps(id,quant,sessionItemDrops);
+
+        writeDropsToMap();
+
+        itemAndTotalPrice = new HashMap<Integer, Double>();
+
+        if(plugin.getPanel().fetchedInfoPanel.isShowing())
+        {
+           return;
+        }
+
+        plugin.getPanel().updateLootGrid(plugin.getPanel().lootDisplayMap());
+    }
+
+    HashMap<Integer, Double> itemAndTotalPrice;
+    double totalGp = 0;
+
+    ArrayList<Integer> ignored;
+
+    public void getTotalPrice()
+    {
+        double totalGpLast = totalGp;
+
+        for (Integer entry : itemAndTotalPrice.keySet())
+        {
+            if(ignored.contains(entry) && !plugin.getPanel().hideItemButton.isSelected())
+            {
+                continue;
+            }
+            totalGp += itemAndTotalPrice.get(entry);
+        }
+        itemAndTotalPrice.clear();
+        totalGp = totalGp - totalGpLast;
+    }
+
+
+    public void loadFetchedDropsFromMap()
+    {
+        try
+        {
+            Type IntegerMap = new TypeToken<Map<Integer, Integer>>(){}.getType();
+            fetchedAllItemDrops = gson.fromJson(new FileReader(subDirectory), IntegerMap);
+        }
+        catch (FileNotFoundException e)
+        {
+            fetchedAllItemDrops = new HashMap<Integer, Integer>();
+            if(!plugin.getPanel().fetchedInfoPanel.isShowing())
+            {
+                try
+                {
+                    lootDirectory.mkdirs();
+                    subDirectory.createNewFile();
+                }
+                catch (IOException exception)
+                {
+                    exception.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+
+    public void loadDropsFromMap()
+    {
+        try
+        {
+            Type IntegerMap = new TypeToken<Map<Integer, Integer>>(){}.getType();
+            allItemDrops = gson.fromJson(new FileReader(subDirectory), IntegerMap);
+        }
+        catch (FileNotFoundException e)
+        {
+            try
+            {
+                lootDirectory.mkdirs();
+                subDirectory.createNewFile();
+                allItemDrops = new HashMap<Integer, Integer>();
+            }
+            catch (IOException exception)
+            {
+                exception.printStackTrace();
+            }
+        }
+    }
+
+
+    public void loadIgnoredList(String bossName)
+    {
+        try
+        {
+            Type IntegerList = new TypeToken<ArrayList<Integer>>(){}.getType();
+            ignoreDirectory = new File(lootDirectory,bossName + "-ignored.json");
+            ignored = gson.fromJson(new FileReader(ignoreDirectory), IntegerList);
+        }
+        catch (FileNotFoundException e)
+        {
+            ignored = new ArrayList<Integer>();
+            if(!plugin.getPanel().fetchedInfoPanel.isShowing())
+            {
+                try
+                {
+                    ignoreDirectory.createNewFile();
+                    writeIgnoredListToFile(plugin.currentBoss);
+                }
+                catch (IOException exception)
+                {
+                    exception.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+
+    public void writeDropsToMap()
+    {
+        try
+        {
+            Writer writer = new FileWriter(subDirectory);
+            gson.toJson(allItemDrops,writer);
+            writer.close();
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+
+    public void writeIgnoredListToFile(String bossName)
+    {
+        try
+        {
+            ignoreDirectory = new File(lootDirectory, bossName + "-ignored.json");
+            Writer writer = new FileWriter(ignoreDirectory);
+            gson.toJson(ignored,writer);
+            writer.close();
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+
+    }
+
+
+
+
+    // function to sort hashmap by values
+    public HashMap<Integer, Integer> sortByValue(HashMap<Integer,Double> hm, Map<Integer,Integer> lootMap)
+    {
+        // Create a list from elements of HashMap
+        List<Map.Entry<Integer, Double> > list = new LinkedList<Map.Entry<Integer, Double> >(hm.entrySet());
+
+        // Sort the list
+        Collections.sort(list, new Comparator<Map.Entry<Integer, Double> >()
+        {
+            public int compare(Map.Entry<Integer, Double> o1, Map.Entry<Integer, Double> o2)
+            {
+                return (o2.getValue()).compareTo(o1.getValue());
+            }
+        });
+
+        // put data from sorted list to hashmap
+        HashMap<Integer, Integer> sorted = new LinkedHashMap<>();
+        for (Map.Entry<Integer, Double> aa : list)
+        {
+            sorted.put(aa.getKey(), lootMap.get(aa.getKey()));
+        }
+        return sorted;
+    }
+
+
     public void fetchLookupInfo()
     {
         File mainFolder = new File(RUNELITE_DIR,"bossing-info");
         file = new File(mainFolder,client.getUsername());
-
         filename = filename + ".txt";
-        System.out.println(filename);
         lookupPath = Paths.get(file.getPath(),filename);
-
         fetchedFile = new File(String.valueOf(lookupPath));
-
         if(!fetchedFile.exists())
         {
             System.out.println("File was not found");
@@ -118,17 +418,17 @@ public class FileReadWriter
             fetchedTotalTrackedKills = Integer.parseInt(list.get(2).replaceAll("[^0-9]", ""));
             fetchedFastestKill = Integer.parseInt(list.get(3).replaceAll("[^0-9]", ""));
             fetchedTotalBossKc = Integer.parseInt(list.get(4).replaceAll("[^0-9]", ""));
+            if(list.size() == 8)
+            {
+                lootKillsTracked = Integer.parseInt(list.get(7).replaceAll("[^0-9]", ""));
+            }
 
             fetchedStatConverter();
-
         }
         catch (IOException e)
         {
             System.out.println("No Such File");
         }
-
-
-
 
     }
 
@@ -146,19 +446,12 @@ public class FileReadWriter
             startKc = Integer.parseInt(list.get(5).replaceAll("[^0-9]", ""));
             endKc = Integer.parseInt(list.get(6).replaceAll("[^0-9]", ""));
 
-            plugin.getPanel().startKcModel.setValue(startKc);
-
-            if(endKc > totalBossKc)
-            {
-                plugin.getPanel().endKcModel.setValue(endKc);
-            }
-            else
-            {
-                plugin.getPanel().endKcModel.setValue(totalBossKc + 1);
-            }
-
             plugin.getPanel().startKcModel.setMaximum(totalBossKc);
-            plugin.getPanel().endKcModel.setMinimum(totalBossKc + 1);
+            plugin.getPanel().startKcModel.setValue(totalBossKc);
+
+            plugin.getPanel().endKcModel.setMinimum(totalBossKc);
+            plugin.getPanel().endKcModel.setValue(totalBossKc);
+            plugin.getPanel().endKcModel.setStepSize(5);
 
         }
         catch (IOException e)
@@ -185,7 +478,6 @@ public class FileReadWriter
 
             Files.delete(path);
             Files.write(path, list, StandardOpenOption.CREATE,StandardOpenOption.APPEND);
-
 
         }
         catch (IOException e)
@@ -249,6 +541,8 @@ public class FileReadWriter
     }
 
 
+    int lootKillsTracked;
+
     int totalBossKc;
     int startKc;
     int endKc;
@@ -257,6 +551,34 @@ public class FileReadWriter
     {
         startKc = 0;
         endKc = 0;
+    }
+
+    List<String> list;
+
+    public void populateNewDataFields()
+    {
+        try
+        {
+            StringBuilder contentBuilder = new StringBuilder();
+            if(list.size() < 7)
+            {
+                contentBuilder.append(0);
+                contentBuilder.append(" Start Kc\n");
+                contentBuilder.append(0);
+                contentBuilder.append(" End Kc\n");
+            }
+            contentBuilder.append(0);
+            contentBuilder.append(" Loot Kills Tracked\n");
+            String content = contentBuilder.toString();
+            Files.write(path, content.getBytes(), StandardOpenOption.APPEND);
+
+            list = Files.readAllLines(path);
+            list.forEach(line -> list.toArray());
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
 
@@ -268,35 +590,24 @@ public class FileReadWriter
         //this finds the file at the directed path
         path = Paths.get(file.getPath(), fileName);
 
-
         try
         {
-
-            List<String> list = Files.readAllLines(path);
+            list = Files.readAllLines(path);
             list.forEach(line -> list.toArray());
+
+            if(list.size() < 8)
+            {
+                populateNewDataFields();
+            }
 
             oldTotalTime = Integer.parseInt(list.get(0).replaceAll("[^0-9]", ""));
             oldTotalVirtualTime = Integer.parseInt(list.get(1).replaceAll("[^0-9]", ""));
             oldTotalKills = Integer.parseInt(list.get(2).replaceAll("[^0-9]", ""));
             oldFastestKill = Integer.parseInt(list.get(3).replaceAll("[^0-9]", ""));
             totalBossKc = Integer.parseInt(list.get(4).replaceAll("[^0-9]", ""));
-
-            if (list.size() == 7)
-            {
-                startKc = Integer.parseInt(list.get(5).replaceAll("[^0-9]", ""));
-                endKc = Integer.parseInt(list.get(6).replaceAll("[^0-9]", ""));
-            }
-            else
-            {
-                StringBuilder contentBuilder = new StringBuilder();
-                contentBuilder.append(0);
-                contentBuilder.append(" Start Kc\n");
-                contentBuilder.append(0);
-                contentBuilder.append(" End Kc\n");
-                String content = contentBuilder.toString();
-                Files.write(path, content.getBytes(), StandardOpenOption.APPEND);
-            }
-
+            startKc = Integer.parseInt(list.get(5).replaceAll("[^0-9]", ""));
+            endKc = Integer.parseInt(list.get(6).replaceAll("[^0-9]", ""));
+            lootKillsTracked = Integer.parseInt(list.get(7).replaceAll("[^0-9]", ""));
         }
 
         catch (IOException e)
@@ -304,9 +615,7 @@ public class FileReadWriter
             System.out.println("File being created");
             try
             {
-
                 StringBuilder contentBuilder = new StringBuilder();
-
                 contentBuilder.append(plugin.totalTime);
                 contentBuilder.append(" Total Time Actual\n");
                 contentBuilder.append(plugin.totalTime);
@@ -321,14 +630,13 @@ public class FileReadWriter
                 contentBuilder.append(" Start Kc\n");
                 contentBuilder.append(0);
                 contentBuilder.append(" End Kc\n");
-
+                contentBuilder.append(1);
+                contentBuilder.append(" Loot Kills Tracked\n");
 
                 String content = contentBuilder.toString();
                 Files.write(path, content.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 
-
                 nullValuesForFileCreation();
-
 
             }
             catch (IOException ioException)
@@ -365,26 +673,15 @@ public class FileReadWriter
         oldFastestKill = 99999999;
         newFastestKill = 99999999;
         lastKillTimeVirtual = 0;
-
-
-
+        lootKillsTracked = 0;
     }
 
 
     public void replaceAndUpdate()
     {
 
-        //issue is that they are 2x'ing up when being sent on kill calc. need to find a way to only send once
-        System.out.println(path.toString());
-        System.out.println(oldTotalTime + " old");
-        System.out.println(plugin.lastKillTotalTime_1 + " last kill total time");
-        System.out.println(newTotalTimeActual + " new total time");
-        System.out.println(startKc + " start");
-        System.out.println(endKc + " end");
-
         if(plugin.isBossChatDisplay())
         {
-
 
             if(plugin.killsThisSession == 1)
             {
@@ -439,6 +736,7 @@ public class FileReadWriter
             newFastestKill = oldFastestKill;
         }
 
+        lootKillsTracked = lootKillsTracked + 1;
 
         try
         {
@@ -460,6 +758,8 @@ public class FileReadWriter
             contentBuilder.append(" Start Kc\n");
             contentBuilder.append(endKc);
             contentBuilder.append(" End Kc\n");
+            contentBuilder.append(lootKillsTracked);
+            contentBuilder.append(" Loot Kills Tracked\n");
 
             String content = contentBuilder.toString();
             Files.write(path, content.getBytes(), StandardOpenOption.CREATE,StandardOpenOption.APPEND);

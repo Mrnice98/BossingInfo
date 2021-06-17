@@ -24,6 +24,7 @@
  */
 package com.killsperhour;
 
+import com.killsperhour.KphConfig;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -111,10 +112,6 @@ class KphInfobox extends InfoBox
 			toolTip.append("</br>Session Time: ");
 			toolTip.append(plugin.timeConverter(plugin.totalSessionTime));
 		}
-
-
-
-
 
 		return toolTip.toString();
 	}

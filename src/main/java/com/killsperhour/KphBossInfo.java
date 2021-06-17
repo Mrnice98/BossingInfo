@@ -42,6 +42,9 @@ enum KphBossInfo
     GAUNTLET("Gauntlet",ItemID.YOUNGLLEF,1,-1,1,"Your Gauntlet completion count is:"),
     CORRUPTED_GAUNTLET("Corrupted Gauntlet",ItemID.CORRUPTED_YOUNGLLEF,1,-1,1,"Your Corrupted Gauntlet completion count is:"),
     THEATER_OF_BLOOD("Theatre of Blood",ItemID.LIL_ZIK,1,-1,1,"Your completed Theatre of Blood count is:"),
+
+    THEATER_OF_BLOOD_HM("Theatre of Blood HM",ItemID.LIL_SOT,1,-1,1,"Your completed Theatre of Blood: Hard Mode count is:"),
+
     VORKATH("Vorkath",ItemID.VORKI,1,-1,0,"Your Vorkath kill count is:"),
     HYDRA("Alchemical Hydra",ItemID.IKKLE_HYDRA_22748,1,-1,0,"Your Alchemical Hydra kill count is:"),
     GROTESQUE_GUARDIANS("Grotesque Guardians",ItemID.NOON,1,-1,1,"Your Grotesque Guardians kill count is:"),
@@ -70,8 +73,10 @@ enum KphBossInfo
     CALLISTO("Callisto",ItemID.CALLISTO_CUB,0,120,-1,"Your Callisto kill count is:"),
     CRAZY_ARCHAEOLOGIST("Crazy Archaeologist",ItemID.FEDORA,0,120,-1,"Your Crazy Archaeologist kill count is:"),
     CHAOS_ELEMENTAL("Chaos Elemental",ItemID.PET_CHAOS_ELEMENTAL,0,120,-1,"Your Chaos Elemental kill count is:"),
+
     VETION("Vet'ion",ItemID.VETION_JR_13180,0,120,-1,"Your Vet'ion kill count is:"),
     VETION_REBORN("Vet'ion Reborn",ItemID.VETION_JR_13180,0,120,-1,"duplicate identifier"),
+
     VENENATIS("Venenatis",ItemID.VENENATIS_SPIDERLING,0,120,-1,"Your Venenatis kill count is:"),
     BARROWS("Barrows",ItemID.BARROWS_TELEPORT,0,1500,-1,"Your Barrows chest count is:"),
     VERAC_THE_DEFILED("Verac the Defiled",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
@@ -125,6 +130,8 @@ enum KphBossInfo
 
     public static final Map<String, String> bossByWords = new HashMap<String, String>();
 
+    public static final Map<String, String> bossByWordsLoot = new HashMap<String, String>();
+
     public static final ArrayList<String> timeMessages = new ArrayList<String>();
 
     static
@@ -135,11 +142,23 @@ enum KphBossInfo
         timeMessages.add("Corrupted challenge duration:");
         timeMessages.add("Challenge duration:");
         timeMessages.add("Theatre of Blood total completion time: ");
-
     }
 
     static
     {
+        bossByWordsLoot.putAll(bossByWords);
+        bossByWordsLoot.put("Thermonuclear smoke devil","Thermy");
+        bossByWordsLoot.put("Vet'ion Reborn","Vet'ion");
+        bossByWordsLoot.put("Chambers of Xeric","Chambers");
+        bossByWordsLoot.put("The Gauntlet","Gauntlet");
+        bossByWordsLoot.put("The Nightmare","Nightmare");
+    }
+
+    static
+    {
+
+        //used for boss name check as-well as when searching for a record
+
         bossByWords.put("c gauntlet","Corrupted Gauntlet");
         bossByWords.put("vork","Vorkath");
 
@@ -173,11 +192,15 @@ enum KphBossInfo
         bossByWords.put("kril","K'ril Tsutsaroth");
         bossByWords.put("kril tsutsaroth","K'ril Tsutsaroth");
 
+        bossByWords.put("Thermonuclear smoke devil","Thermy");
         bossByWords.put("thermonuclear smoke devil","Thermy");
         bossByWords.put("cerb","Cerberus");
         bossByWords.put("kbd","King Black Dragon");
         bossByWords.put("chaos elly","Chaos Elemental");
+
+        bossByWords.put("Vet'ion Reborn","Vet'ion");
         bossByWords.put("vetion","Vet'ion");
+
         bossByWords.put("kq","Kalphite Queen");
         bossByWords.put("corp","Corporeal Beast");
 
@@ -194,6 +217,11 @@ enum KphBossInfo
         //TOB ByWords
         bossByWords.put("theatre","Theatre of Blood");
         bossByWords.put("tob","Theatre of Blood");
+
+        //TOB HM ByWords
+        bossByWords.put("theatre hm","Theatre of Blood HM");
+        bossByWords.put("tob hm","Theatre of Blood HM");
+        bossByWords.put("hm","Theatre of Blood HM");
 
         bossByWords.put("hydra","Alchemical Hydra");
     }
