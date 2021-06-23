@@ -168,6 +168,10 @@ public class FileReadWriter
         {
             bossNameMatch = true;
         }
+        else if(plugin.currentBoss.equals("Theatre of Blood HM") && plugin.bossName.equals("Theatre of Blood"))
+        {
+            bossNameMatch = true;
+        }
         else if(plugin.currentBoss.equals("CM Chambers") && plugin.bossName.equals("Chambers of Xeric"))
         {
             bossNameMatch = true;
