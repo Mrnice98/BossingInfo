@@ -173,9 +173,11 @@ Alternatively feel free to leave a comment or open an issue on GitHub
     - ADDED Boss Goals feature
     - small change to how icons are postioned
     - a few small backend changes, not notable.
-    
-    
-    
+ 
+ - **Version 1.6**   
+    - ADDED loot tracking
+    - added hm support
+    - a few small backend changes, not notable.     
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Description of how the plugin works: **Re Write Needed**
