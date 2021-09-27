@@ -27,6 +27,7 @@ package com.killsperhour;
 import com.google.common.collect.ImmutableMap;
 import net.runelite.api.ItemID;
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +37,7 @@ enum KphBossInfo
 
 
     //display type 1 = yes , 0 = no
-    ZULRAH("Zulrah",ItemID.PET_SNAKELING_12940,1,-1,0,"Your Zulrah kill count is:"),
+    ZULRAH("Zulrah", ItemID.PET_SNAKELING_12940,1,-1,0,"Your Zulrah kill count is:"),
     CHAMBERS("Chambers",ItemID.OLMLET,1,-1,1,"Your completed Chambers of Xeric count is:"),
     CM_CHAMBERS("CM Chambers",ItemID.TEKTINY,1,-1,1,"Your completed Chambers of Xeric Challenge Mode count is:"),
     GAUNTLET("Gauntlet",ItemID.YOUNGLLEF,1,-1,1,"Your Gauntlet completion count is:"),
@@ -48,7 +49,10 @@ enum KphBossInfo
     VORKATH("Vorkath",ItemID.VORKI,1,-1,0,"Your Vorkath kill count is:"),
     HYDRA("Alchemical Hydra",ItemID.IKKLE_HYDRA_22748,1,-1,0,"Your Alchemical Hydra kill count is:"),
     GROTESQUE_GUARDIANS("Grotesque Guardians",ItemID.NOON,1,-1,1,"Your Grotesque Guardians kill count is:"),
+
     NIGHTMARE("Nightmare",ItemID.LITTLE_NIGHTMARE,1,-1,0,"Your Nightmare kill count is:"),
+    PHOSANIS_NIGHTMARE("Phosani's Nightmare",ItemID.PARASITIC_EGG,1,-1,0,"Your Phosani's Nightmare kill count is:"),
+
     TZTOK_JAD("TzTok-Jad",ItemID.TZREKJAD,1,-1,0,"Your TzTok-Jad kill count is:"),
     TZKAL_ZUK("TzKal-Zuk",ItemID.TZREKZUK,1,-1,0,"Your TzKal-Zuk kill count is:"),
 
@@ -197,6 +201,8 @@ enum KphBossInfo
         bossByWords.put("cerb","Cerberus");
         bossByWords.put("kbd","King Black Dragon");
         bossByWords.put("chaos elly","Chaos Elemental");
+
+        bossByWords.put("pnm","Phosani's Nightmare");
 
         bossByWords.put("Vet'ion Reborn","Vet'ion");
         bossByWords.put("vetion","Vet'ion");
