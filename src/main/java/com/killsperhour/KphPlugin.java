@@ -654,6 +654,7 @@ public class KphPlugin extends Plugin
         //FIGHT DURATION CHAT IDENTIFIER, FOR BOSSESS WHO OUTPUT IN THAT FORMAT.
         if(message.contains("Fight duration:"))
         {
+            message = message.substring(message.indexOf("Fight duration:"));
             timeMessage = message;
             return 0;
         }
