@@ -89,7 +89,7 @@ enum KphBossInfo
     GUTHAN_THE_INFESTED("Guthan the Infested",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
     DHAROK_THE_WRETCHED("Dharok the Wretched",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
     AHRIM_THE_BLIGHTED("Ahrim the Blighted",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
-    DERANGED_ARCHAEOLOGIST("Deranged Archaeologist",ItemID.UNIDENTIFIED_RARE_FOSSIL,0,120,-1,"Your Deranged Archaeologist kill count is:"),
+    DERANGED_ARCHAEOLOGIST("Deranged archaeologist",ItemID.UNIDENTIFIED_RARE_FOSSIL,0,120,-1,"Your Deranged Archaeologist kill count is:"),
     KALPHITE_QUEEN("Kalphite Queen",ItemID.KALPHITE_PRINCESS,0,400,-1,"Your Kalphite Queen kill count is:"),
     CORPOREAL_BEAST("Corporeal Beast", ItemID.PET_CORPOREAL_CRITTER,0,400,-1,"Your Corporeal Beast kill count is:"),
     DAGANNOTH_PRIME("Dagannoth Prime",ItemID.PET_DAGANNOTH_PRIME,0,15,-1,"not included"),
