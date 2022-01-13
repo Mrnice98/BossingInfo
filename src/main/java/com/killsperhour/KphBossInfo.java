@@ -66,6 +66,9 @@ enum KphBossInfo
     GENERAL_GRAARDOR("General Graardor",ItemID.PET_GENERAL_GRAARDOR,0,120,-1,"Your General Graardor kill count is:"),
     KREEARRA("Kree'arra",ItemID.PET_KREEARRA,0,120,-1,"Your Kree'arra kill count is:"),
     KRIL_TSUTSAROTH("K'ril Tsutsaroth",ItemID.PET_KRIL_TSUTSAROTH,0,120,-1,"Your K'ril Tsutsaroth kill count is:"),
+
+    NEX("Nex",ItemID.NEXLING,1,-1,0,"Your Nex kill count is:"),
+
     KRAKEN("Kraken",ItemID.PET_KRAKEN,0,220,-1,"Your Kraken kill count is:"),
     ENORMOUS_TENTACLE("Enormous Tentacle",ItemID.PET_KRAKEN,0,220,-1,"not included"),
     THERMY("Thermy",ItemID.PET_SMOKE_DEVIL,0,220,-1,"Your Thermonuclear Smoke Devil kill count is:"),
