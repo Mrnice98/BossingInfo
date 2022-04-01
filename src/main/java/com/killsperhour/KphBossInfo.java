@@ -79,7 +79,7 @@ enum KphBossInfo
     CHAOS_FANATIC("Chaos Fanatic",ItemID.ANCIENT_STAFF,0,250,-1,"Your Chaos Fanatic kill count is:"),
     CALLISTO("Callisto",ItemID.CALLISTO_CUB,0,250,-1,"Your Callisto kill count is:"),
 
-    CRAZY_ARCHAEOLOGIST("Crazy Archaeologist",ItemID.FEDORA,0,250,-1,"Your Crazy Archaeologist kill count is:"),
+    CRAZY_ARCHAEOLOGIST("Crazy archaeologist",ItemID.FEDORA,0,250,-1,"Your Crazy Archaeologist kill count is:"),
     CHAOS_ELEMENTAL("Chaos Elemental",ItemID.PET_CHAOS_ELEMENTAL,0,250,-1,"Your Chaos Elemental kill count is:"),
 
     VETION("Vet'ion",ItemID.VETION_JR_13180,0,250,-1,"Your Vet'ion kill count is:"),
