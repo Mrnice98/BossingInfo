@@ -82,8 +82,8 @@ enum KphBossInfo
     CRAZY_ARCHAEOLOGIST("Crazy archaeologist",ItemID.FEDORA,0,250,-1,"Your Crazy Archaeologist kill count is:"),
     CHAOS_ELEMENTAL("Chaos Elemental",ItemID.PET_CHAOS_ELEMENTAL,0,250,-1,"Your Chaos Elemental kill count is:"),
 
-    VETION("Vet'ion",ItemID.VETION_JR_13180,0,250,-1,"Your Vet'ion kill count is:"),
-    VETION_REBORN("Vet'ion Reborn",ItemID.VETION_JR_13180,0,250,-1,"duplicate identifier"),
+    VETION("Vet'ion",ItemID.VETION_JR_13180,0,350,-1,"Your Vet'ion kill count is:"),
+    VETION_REBORN("Vet'ion Reborn",ItemID.VETION_JR_13180,0,350,-1,"duplicate identifier"),
 
     VENENATIS("Venenatis",ItemID.VENENATIS_SPIDERLING,0,250,-1,"Your Venenatis kill count is:"),
     BARROWS("Barrows",ItemID.BARROWS_TELEPORT,0,1500,-1,"Your Barrows chest count is:"),
