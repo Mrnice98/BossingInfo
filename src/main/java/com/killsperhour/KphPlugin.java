@@ -408,6 +408,8 @@ public class KphPlugin extends Plugin
 
     }
 
+    //something like from when the first hit to last death animation ect and calculate using that.
+    //count from in game drop messages matching booster or team-mates names
 
     @Subscribe
     public void onHitsplatApplied(HitsplatApplied hitsplatApplied)
