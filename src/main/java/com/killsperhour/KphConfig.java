@@ -245,9 +245,18 @@ public interface KphConfig extends Config
     )
     default boolean outputOnChange() { return false; }
 
-
     @ConfigItem(
             position = 4,
+            keyName = "Kph In Chat Box",
+            name = "Kph In Chat Box",
+            description = "Outputs current kph to the chat box every kill",
+            section = generalSettings
+    )
+    default boolean printKphInChat() { return false; }
+
+
+    @ConfigItem(
+            position = 5,
             keyName = "Session Timeout",
             name = "Session Timeout",
             description = "Set the session timeout time in minutes (set to 0 for no timeout time)",
@@ -267,7 +276,7 @@ public interface KphConfig extends Config
     }
 
     @ConfigItem(
-            position = 5,
+            position = 6,
             keyName = "KPH Calc Method",
             name = "KPH Calc",
             description = "Allows you to choose the method KPH calculated via",
@@ -282,7 +291,7 @@ public interface KphConfig extends Config
     }
 
     @ConfigItem(
-            position = 5,
+            position = 7,
             keyName = "Loot Display",
             name = "Loot Display",
             description = "Allows you to choose the method KPH calculated via",
@@ -299,7 +308,7 @@ public interface KphConfig extends Config
     }
 
     @ConfigItem(
-            position = 6,
+            position = 8,
             keyName = "Dagannoth Selector",
             name = "Dagannoth Selector",
             description = "Allows you to select which Dagannoth King the plugin will track",

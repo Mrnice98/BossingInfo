@@ -25,8 +25,6 @@
 package com.killsperhour;
 
 import com.google.inject.Provides;
-import com.killsperhour.*;
-import com.sun.jna.platform.FileUtils;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.*;
@@ -48,7 +46,6 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.loottracker.LootReceived;
 import net.runelite.client.ui.ClientToolbar;
-import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -58,11 +55,8 @@ import net.runelite.http.api.loottracker.LootRecordType;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import javax.inject.Inject;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -392,6 +386,9 @@ public class KphPlugin extends Plugin
 
             kcMessage = null;
             timeMessage = null;
+
+            //needs to be after nulling the msgs
+            printCurrentKph();
         }
 
     }
@@ -780,6 +777,7 @@ public class KphPlugin extends Plugin
                 {
                     nonChatDisplayBossMethod(bossIdentifier.getName());
                     calcKillsPerHour();
+                    printCurrentKph();
                 }
 
                 break;
@@ -925,9 +923,9 @@ public class KphPlugin extends Plugin
         if(sessionNpc != null)
         {
             //Displays end of session stats in chat
+            updateSessionInfoCache();
             if(config.outputOnChange())
             {
-                updateSessionInfoCache();
                 sessionInfoOutputMessage();
             }
             reset();
@@ -1029,6 +1027,17 @@ public class KphPlugin extends Plugin
         chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Idle Time: " + cachedIdleTime).build());
         chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Session Time: " + cachedSessionTime).build());
         chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("-------------------------").build());
+    }
+
+    public void printCurrentKph()
+    {
+        if(config.printKphInChat())
+        {
+            System.out.println(formatKPH());
+            client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","KPH: " + "<col=ff0000>"+ formatKPH()+"</col>","");
+            //chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Kph: " + formatKPH()).build());
+
+        }
     }
 
     //Command to output session info into chat if at least one kill has been done since plugin was turned on. commands added at bottem
