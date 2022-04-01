@@ -201,19 +201,7 @@ public class KphPlugin extends Plugin
     @Getter
     @Setter
     int calcMode;
-
     boolean paused;
-
-
-    private List<String> blackList = new ArrayList();
-
-
-    // for some reason this needs to be im not sure why, but i would like to move to the bossids file. need to look into currently works tho
-    // for some reason this needs to be im not sure why, but i would like to move to the bossids file. need to look into currently works tho
-    //Map<String, Integer> bossIcon = new HashMap<String, Integer>();
-
-    //need to make a way to reset the first kill time if the boss is not hit within 10-15sec or something, with an execption for corp and sire.
-
 
 
 //                                                OPERATIONAL METHODS USED TO POWER THE PLUGIN
@@ -366,12 +354,6 @@ public class KphPlugin extends Plugin
         }
 
     }
-
-
-
-
-
-
 
     String kcMessage;
     String timeMessage;
