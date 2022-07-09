@@ -331,12 +331,11 @@ public class KphPlugin extends Plugin
     public void onChatMessage(ChatMessage chatMessage)
     {
         Player player = client.getLocalPlayer();
-        assert player != null;
-
-        if(delayTicks < 5)
+        if (player == null || delayTicks < 5)
         {
             return;
         }
+        
         if (chatMessage.getType() == ChatMessageType.GAMEMESSAGE || chatMessage.getType() == ChatMessageType.FRIENDSCHATNOTIFICATION || chatMessage.getType() == ChatMessageType.SPAM)
         {
             canRun = false;
