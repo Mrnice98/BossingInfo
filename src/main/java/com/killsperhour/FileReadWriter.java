@@ -39,6 +39,10 @@ public class FileReadWriter
     private ClientThread clientThread;
 
     @Inject
+    private Gson gson;
+
+
+    @Inject
     private FileReadWriter(KphPlugin plugin, Client client)
     {
         this.plugin = plugin;
@@ -100,7 +104,7 @@ public class FileReadWriter
 
     File fetchedFile;
 
-    Gson gson = new Gson();
+
 
     Map<Integer, Integer> drops = new HashMap<Integer, Integer>();
     Map<Integer, Integer> allItemDrops = new HashMap<Integer, Integer>();
@@ -415,6 +419,7 @@ public class FileReadWriter
     {
         File mainFolder = new File(RUNELITE_DIR,"bossing-info");
         file = new File(mainFolder,client.getUsername());
+
         filename = filename + ".txt";
         lookupPath = Paths.get(file.getPath(),filename);
         fetchedFile = new File(String.valueOf(lookupPath));
