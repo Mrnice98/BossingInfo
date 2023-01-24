@@ -15,7 +15,7 @@ Alternatively feel free to leave a comment or open an issue on GitHub
 
 ### **__Supported Bosses:__**                                                                                                                                                                                                                                                                                                   
 - Currently the plugin has full support for the following bosses:  
-  `Zulrah`   `Vorkath`   `Nightmare`   `Theater of Blood`   `Chambers of Xeric & CM`   `Alchemical Hydra`   `Grotesque Guardians`   `The Gauntlet & Corrupted`   `TzTok-Jad`    `Thermonuclear smoke devil`  `Cerberus`   `Chaos Fanatic`   `Crazy archaeologist`   `Scorpia`   `King Black Dragon`  `Chaos Elemental`  `Venenatis`   `Callisto`  `Giant Mole`   `Dagannoth Kings`   `Sarachnis`   `Kalphite Queen`   `Kree'arra`   `Commander Zilyana`   `General Graardor`   `K'ril   Tsutsaroth`   `Corporeal Beast` `Kraken`  `Abyssal Sire`  `Vet'ion`  `Barrows`  
+  `Zulrah`   `Vorkath`   `Nightmare`   `Theater of Blood & HM`   `Chambers of Xeric & CM`   `Alchemical Hydra`   `Grotesque Guardians`   `The Gauntlet & Corrupted`   `TzTok-Jad`    `Thermonuclear smoke devil`  `Cerberus`   `Chaos Fanatic`   `Crazy archaeologist`   `Scorpia`   `King Black Dragon`  `Chaos Elemental`  `Venenatis`   `Callisto`  `Giant Mole`   `Dagannoth Kings`   `Sarachnis`   `Kalphite Queen`   `Kree'arra`   `Commander Zilyana`   `General Graardor`   `K'ril   Tsutsaroth`   `Corporeal Beast` `Kraken`  `Abyssal Sire`  `Vet'ion`  `Barrows` `Nex` `TOA``Muspah`
   
 - Special Bosses:  
   `Vet'ion`  `Barrows`  `Dagannoth Kings`  
