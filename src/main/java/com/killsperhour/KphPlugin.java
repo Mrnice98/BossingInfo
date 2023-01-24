@@ -60,9 +60,7 @@ import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
 
 
@@ -218,6 +216,12 @@ public class KphPlugin extends Plugin
         {
             return;
         }
+
+        if (killsThisSession == 1 && !fileRW.sessionItemDrops.isEmpty())
+        {
+            fileRW.sessionItemDrops.clear();
+        }
+
         itemStacks = event.getItems();
         bossName = event.getName();
         fileRW.lootReceived();
@@ -330,13 +334,14 @@ public class KphPlugin extends Plugin
     @Subscribe
     public void onChatMessage(ChatMessage chatMessage)
     {
-        Player player = client.getLocalPlayer();
-        assert player != null;
 
-        if(delayTicks < 5)
+        Player player = client.getLocalPlayer();
+
+        if(player == null || delayTicks < 5)
         {
             return;
         }
+
         if (chatMessage.getType() == ChatMessageType.GAMEMESSAGE || chatMessage.getType() == ChatMessageType.FRIENDSCHATNOTIFICATION || chatMessage.getType() == ChatMessageType.SPAM)
         {
             canRun = false;
@@ -350,9 +355,7 @@ public class KphPlugin extends Plugin
             bossKc();
             bossKillTime();
             chatMessageQueue();
-
         }
-
     }
 
     String kcMessage;
@@ -680,6 +683,13 @@ public class KphPlugin extends Plugin
             return 0;
         }
 
+        if (message.contains("Tombs of Amascut total completion time:")
+        || message.contains("Tombs of Amascut: Expert Mode total completion time:"))
+        {
+            timeMessage = message;
+            return 0;
+        }
+
 
         else
             return 0;
@@ -864,6 +874,7 @@ public class KphPlugin extends Plugin
         {
             sessionInfoOutputMessage();
         }
+
         reset();
         killsThisSession = 1;
 
@@ -901,6 +912,8 @@ public class KphPlugin extends Plugin
 
 
 
+
+
     //ends the session setting all values to null / zero or equivelant.
     public void sessionEnd()
     {
@@ -912,21 +925,16 @@ public class KphPlugin extends Plugin
             {
                 sessionInfoOutputMessage();
             }
+
+
             reset();
             killsThisSession = 0;
-
-
             sessionNpc = null;
             currentBoss = null;
             totalTime = 0;
             totalBossKillTime = 0;
             totalKillTime = 0;
-
-
-
-
             killCount = 0;
-
             fastestKill = 9999999;
 
             infoBoxManager.removeInfoBox(infobox);
@@ -936,6 +944,7 @@ public class KphPlugin extends Plugin
             panel.progressBar.setDimmedText("No Session");
             panel.progressBar.repaint();
 
+
         }
 
     }
@@ -943,7 +952,6 @@ public class KphPlugin extends Plugin
     public void reset()
     {
 
-        fileRW.sessionItemDrops.clear();
         paused = false;
         calcMode = 0;
         pauseTime = 0;
@@ -989,6 +997,12 @@ public class KphPlugin extends Plugin
     //this updates the cache variables used to store the info chatmessage output, when this is called it gets the inforation at time of run
     public void updateSessionInfoCache()
     {
+
+        if (!fileRW.sessionItemDrops.isEmpty())
+        {
+            fileRW.cachedItemDrops = fileRW.sessionItemDrops;
+        }
+
         cacheHasInfo = true;
         cachedKPH = formatKPH();
         cachedSessionKills = killsThisSession;

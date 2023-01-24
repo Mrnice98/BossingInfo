@@ -26,6 +26,7 @@ package com.killsperhour;
 
 import com.google.common.collect.ImmutableMap;
 import net.runelite.api.ItemID;
+import okhttp3.Challenge;
 
 
 import java.util.ArrayList;
@@ -36,10 +37,17 @@ enum KphBossInfo
 {
 
 
-    //display type 1 = yes , 0 = no
+    //display type 1 = yes , 0 = no Phantom Muspah
+    PHANTOM_MUSPAH("Phantom Muspah", ItemID.MUPHIN,1,-1,0,"Your Phantom Muspah kill count is:"),
     ZULRAH("Zulrah", ItemID.PET_SNAKELING_12940,1,-1,0,"Your Zulrah kill count is:"),
     CHAMBERS("Chambers",ItemID.OLMLET,1,-1,1,"Your completed Chambers of Xeric count is:"),
     CM_CHAMBERS("CM Chambers",ItemID.TEKTINY,1,-1,1,"Your completed Chambers of Xeric Challenge Mode count is:"),
+
+    TOA_NORMAL("TOA Normal",ItemID.TUMEKENS_GUARDIAN,1,-1,1,"Your completed Tombs of Amascut count is:"),
+    TOA_EXPERT("TOA Expert",ItemID.AKKHITO,1,-1,1,"Your completed Tombs of Amascut: Expert Mode count is:"),
+
+
+
     GAUNTLET("Gauntlet",ItemID.YOUNGLLEF,1,-1,1,"Your Gauntlet completion count is:"),
     CORRUPTED_GAUNTLET("Corrupted Gauntlet",ItemID.CORRUPTED_YOUNGLLEF,1,-1,1,"Your Corrupted Gauntlet completion count is:"),
     THEATER_OF_BLOOD("Theatre of Blood",ItemID.LIL_ZIK,1,-1,1,"Your completed Theatre of Blood count is:"),
@@ -150,6 +158,8 @@ enum KphBossInfo
         timeMessages.add("Corrupted challenge duration:");
         timeMessages.add("Challenge duration:");
         timeMessages.add("Theatre of Blood total completion time: ");
+        timeMessages.add("Tombs of Amascut: Expert Mode total completion time:");
+        timeMessages.add("Tombs of Amascut total completion time:");//normal mode
     }
 
     static
@@ -172,9 +182,16 @@ enum KphBossInfo
 
         //GG's ByWords
         bossByWords.put("garg boss","Grotesque Guardians");
-        bossByWords.put("dusk","Grotesque Guardians");
+
+
+        bossByWords.put("Dusk","Grotesque Guardians");
+
+
         bossByWords.put("dawn","Grotesque Guardians");
         bossByWords.put("ggs","Grotesque Guardians");
+
+
+
 
         bossByWords.put("zuk","TzKal-Zuk");
         bossByWords.put("jad","TzTok-Jad");
@@ -214,6 +231,11 @@ enum KphBossInfo
         bossByWords.put("kq","Kalphite Queen");
         bossByWords.put("corp","Corporeal Beast");
 
+
+        bossByWords.put("phantom","Phantom Muspah");
+        bossByWords.put("muspah","Phantom Muspah");
+        bossByWords.put("grumbler","Phantom Muspah");
+
         //CM ByWords
         bossByWords.put("cm","CM Chambers");
         bossByWords.put("cm cox","CM Chambers");
@@ -232,6 +254,10 @@ enum KphBossInfo
         bossByWords.put("theatre hm","Theatre of Blood HM");
         bossByWords.put("tob hm","Theatre of Blood HM");
         bossByWords.put("hm","Theatre of Blood HM");
+
+        //TOA byWords
+        bossByWords.put("TOA","TOA Normal");
+
 
         bossByWords.put("hydra","Alchemical Hydra");
     }

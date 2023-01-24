@@ -107,6 +107,8 @@ public class FileReadWriter
     Map<Integer, Integer> fetchedAllItemDrops = new HashMap<Integer, Integer>();
     Map<Integer, Integer> sessionItemDrops = new HashMap<Integer, Integer>();
 
+    Map<Integer, Integer> cachedItemDrops = new HashMap<Integer, Integer>();
+
     File lootDirectory;
     File subDirectory;
     File ignoreDirectory;
@@ -162,28 +164,37 @@ public class FileReadWriter
 
     boolean bossNameMatch;
 
+
     public void bossNameMatcher()
     {
         if(plugin.bossName.equals(plugin.currentBoss))
         {
             bossNameMatch = true;
         }
-        else if(plugin.currentBoss.equals("Theatre of Blood HM") && plugin.bossName.equals("Theatre of Blood"))
+        else if(("Theatre of Blood HM").equals(plugin.currentBoss) && ("Theatre of Blood").equals(plugin.bossName))
         {
             bossNameMatch = true;
         }
-        else if(plugin.currentBoss.equals("CM Chambers") && plugin.bossName.equals("Chambers of Xeric"))
+        else if(("TOA Expert").equals(plugin.currentBoss) && ("Tombs of Amascut").equals(plugin.bossName))
         {
             bossNameMatch = true;
         }
-        else if(plugin.currentBoss.equals("Corrupted Gauntlet") && plugin.bossName.equals("The Gauntlet"))
+        else if(("TOA Normal").equals(plugin.currentBoss) && ("Tombs of Amascut").equals(plugin.bossName))
         {
             bossNameMatch = true;
         }
-        else if(plugin.currentBoss.equals("Dagannoth Kings") &&
-               (plugin.bossName.equals("Dagannoth Rex")
-             || plugin.bossName.equals("Dagannoth Prime")
-             || plugin.bossName.equals("Dagannoth Supreme")))
+        else if(("CM Chambers").equals(plugin.currentBoss) && ("Chambers of Xeric").equals(plugin.bossName))
+        {
+            bossNameMatch = true;
+        }
+        else if(("Corrupted Gauntlet").equals(plugin.currentBoss) && ("The Gauntlet").equals(plugin.bossName))
+        {
+            bossNameMatch = true;
+        }
+        else if(("Dagannoth Kings").equals(plugin.currentBoss) &&
+               (("Dagannoth Rex").equals(plugin.bossName)
+             || ("Dagannoth Prime").equals(plugin.bossName)
+             || ("Dagannoth Supreme".equals(plugin.bossName))))
         {
             bossNameMatch = true;
         }
@@ -240,10 +251,12 @@ public class FileReadWriter
         plugin.getPanel().updateLootGrid(plugin.getPanel().lootDisplayMap());
     }
 
+
     HashMap<Integer, Double> itemAndTotalPrice;
     double totalGp = 0;
 
     ArrayList<Integer> ignored;
+
 
     public void getTotalPrice()
     {
@@ -251,7 +264,7 @@ public class FileReadWriter
 
         for (Integer entry : itemAndTotalPrice.keySet())
         {
-            if(ignored.contains(entry) && !plugin.getPanel().hideItemButton.isSelected())
+            if(ignored != null && ignored.contains(entry) && !plugin.getPanel().hideItemButton.isSelected())
             {
                 continue;
             }

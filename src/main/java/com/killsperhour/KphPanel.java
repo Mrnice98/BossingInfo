@@ -294,7 +294,11 @@ class KphPanel extends PluginPanel {
         {
            return fileRW.fetchedAllItemDrops;
         }
-        else if((!plugin.getPanel().fetchedInfoPanel.isShowing()) && (config.lootDisplay() == KphConfig.LootDisplay.ALL_TIME))
+        else if (fileRW.cachedItemDrops != null && plugin.sessionNpc == null)
+        {
+            return fileRW.cachedItemDrops;
+        }
+        else if((!plugin.getPanel().fetchedInfoPanel.isShowing()) && (config.lootDisplay() == KphConfig.LootDisplay.ALL_TIME) && plugin.sessionNpc != null)
         {
             return fileRW.allItemDrops;
         }
@@ -302,6 +306,7 @@ class KphPanel extends PluginPanel {
         {
             return fileRW.sessionItemDrops;
         }
+
     }
 
 
@@ -352,7 +357,6 @@ class KphPanel extends PluginPanel {
 
     public void updateLootGrid(Map<Integer,Integer> lootMap)
     {
-
         for (Map.Entry<Integer, Integer> entry : lootMap.entrySet())
         {
             double itemPrice = itemManager.getItemPrice(entry.getKey());
@@ -367,12 +371,20 @@ class KphPanel extends PluginPanel {
 
     public void lootGrid(Map<Integer,Integer> lootMap)
     {
+        fileRW.loadIgnoredList(provideBossName());
+        HashMap<Integer, Integer> sorted = new HashMap<>();
+        if (!fileRW.itemAndTotalPrice.isEmpty())
+        {
+            sorted = fileRW.sortByValue(fileRW.itemAndTotalPrice,lootMap);
+        }
+
         JPanel containerCurrent = new JPanel();
 
-        HashMap<Integer, Integer> sorted = fileRW.sortByValue(fileRW.itemAndTotalPrice,lootMap);
+       // HashMap<Integer, Integer> sorted = fileRW.sortByValue(fileRW.itemAndTotalPrice,lootMap);
 
         int totalItems;
-        if(hideItemButton.isSelected())
+
+        if(hideItemButton.isSelected() || fileRW.ignored == null)
         {
             totalItems = sorted.keySet().size();
         }
@@ -416,6 +428,7 @@ class KphPanel extends PluginPanel {
             final JMenuItem toggle = new JMenuItem("Toggle item");
             toggle.addActionListener(e ->
             {
+                fileRW.loadIgnoredList(provideBossName());
                 if(fileRW.ignored.contains(key))
                 {
                     fileRW.ignored.remove(key);
@@ -430,7 +443,7 @@ class KphPanel extends PluginPanel {
             });
 
 
-
+            fileRW.loadIgnoredList(provideBossName());
             if(!fileRW.ignored.contains(key) || hideItemButton.isSelected())
             {
                 popupMenu.add(toggle);
@@ -511,6 +524,14 @@ class KphPanel extends PluginPanel {
         {
             updateLootHeaderInfo(plugin.killsThisSession,Double.parseDouble(plugin.formatKPH()));
         }
+
+        if (!plugin.getPanel().fetchedInfoPanel.isShowing() && plugin.sessionNpc == null && plugin.cacheHasInfo)
+        {
+            updateLootHeaderInfo(plugin.cachedSessionKills,Double.parseDouble(plugin.cachedKPH));
+        }
+
+
+
 
 
         lootPanel.revalidate();
@@ -873,19 +894,26 @@ class KphPanel extends PluginPanel {
 
     }
 
+
+    private Map<Integer,Integer> currentLootTable = new HashMap<>();
+
     public void getFetchedLoot()
     {
         fileRW.lootDirectory = new File(fileRW.file, "boss-loot");
         fileRW.subDirectory = new File(fileRW.lootDirectory, searchInput + ".json");
         fileRW.loadFetchedDropsFromMap();
-        fileRW.loadIgnoredList(searchInput);
+       // fileRW.loadIgnoredList(searchInput);
         if(fileRW.fetchedFile == null || !fileRW.fetchedFile.exists())
         {
             fileRW.fetchedAllItemDrops = new HashMap<Integer, Integer>();
             fileRW.ignored = new ArrayList<Integer>();
         }
         fileRW.itemAndTotalPrice = new HashMap<Integer, Double>();
-        clientThread.invoke(() -> updateLootGrid(fileRW.fetchedAllItemDrops));
+
+        fileRW.loadIgnoredList(provideBossName());
+
+        clientThread.invoke(() -> updateLootGrid(lootDisplayMap()));
+
     }
 
 
@@ -1132,6 +1160,8 @@ class KphPanel extends PluginPanel {
         sidePanel.revalidate();
 
         fileRW.loadIgnoredList(plugin.currentBoss);
+
+
         clientThread.invoke(() -> updateLootGrid(lootDisplayMap()));
     }
 
