@@ -447,7 +447,7 @@ public class KphPlugin extends Plugin
 
                     if (currentNPC.getName() != null && lastValidBoss.getName() != null)
                     {
-                        if(!currentNPC.getName().equals(lastValidBoss.getName()) && lastValidBoss.getId() != NpcID.VETION_REBORN)
+                        if(!currentNPC.getName().equals(lastValidBoss.getName()) && lastValidBoss.getId() != NpcID.VETION_6612)
                         {
                             attkCount = 1;
                             setKillTimeStart();
@@ -498,7 +498,7 @@ public class KphPlugin extends Plugin
         {
             if(lastValidBoss.isDead() && stoper == 0)
             {
-                if(lastValidBoss.getId() != NpcID.KALPHITE_QUEEN_963 && lastValidBoss.getId() != NpcID.VETION_REBORN )
+                if(lastValidBoss.getId() != NpcID.KALPHITE_QUEEN_963 && lastValidBoss.getId() != NpcID.VETION_6612 )
                 {
                     sMethods.dagTimeClearTwo();
                     attkCount = 0;
