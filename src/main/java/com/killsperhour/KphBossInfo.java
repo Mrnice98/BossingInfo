@@ -85,15 +85,24 @@ enum KphBossInfo
     KING_BLACK_DRAGON("King Black Dragon",ItemID.PRINCE_BLACK_DRAGON,0,120,-1,"Your King Black Dragon kill count is:"),
     SCORPIA("Scorpia",ItemID.SCORPIAS_OFFSPRING,0,250,-1,"Your Scorpia kill count is:"),
     CHAOS_FANATIC("Chaos Fanatic",ItemID.ANCIENT_STAFF,0,250,-1,"Your Chaos Fanatic kill count is:"),
-    CALLISTO("Callisto",ItemID.CALLISTO_CUB,0,250,-1,"Your Callisto kill count is:"),
 
     CRAZY_ARCHAEOLOGIST("Crazy archaeologist",ItemID.FEDORA,0,250,-1,"Your Crazy Archaeologist kill count is:"),
     CHAOS_ELEMENTAL("Chaos Elemental",ItemID.PET_CHAOS_ELEMENTAL,0,250,-1,"Your Chaos Elemental kill count is:"),
 
+    CALLISTO("Callisto",ItemID.CALLISTO_CUB,0,250,-1,"Your Callisto kill count is:"),
+    ARTIO("Artio",ItemID.CALLISTO_CUB_27649,0,250,-1,"Your Artio kill count is:"),
+
+
     VETION("Vet'ion",ItemID.VETION_JR_13180,0,350,-1,"Your Vet'ion kill count is:"),
     VETION_REBORN("Vet'ion Reborn",ItemID.VETION_JR_13180,0,350,-1,"duplicate identifier"),
 
+    CALVARION("Calvar'ion",ItemID.VETION_JR_27650,0,350,-1,"Your Calvar'ion kill count is:"),
+
+
     VENENATIS("Venenatis",ItemID.VENENATIS_SPIDERLING,0,250,-1,"Your Venenatis kill count is:"),
+    SPINDEL("Spindel",ItemID.VENENATIS_SPIDERLING_27648,0,250,-1,"Your Spindel kill count is:"),
+
+
     BARROWS("Barrows",ItemID.BARROWS_TELEPORT,0,1500,-1,"Your Barrows chest count is:"),
     VERAC_THE_DEFILED("Verac the Defiled",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
     TORAG_THE_CORRUPTED("Torag the Corrupted",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
