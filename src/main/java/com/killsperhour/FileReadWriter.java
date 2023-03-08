@@ -226,7 +226,6 @@ public class FileReadWriter
 
         if(!bossNameMatch)
         {
-            System.out.println("miss matched name");
             return;
         }
 
@@ -425,7 +424,6 @@ public class FileReadWriter
         fetchedFile = new File(String.valueOf(lookupPath));
         if(!fetchedFile.exists())
         {
-            System.out.println("File was not found");
             return;
         }
 
@@ -449,7 +447,7 @@ public class FileReadWriter
         }
         catch (IOException e)
         {
-            System.out.println("No Such File");
+            e.getCause();
         }
 
     }
@@ -478,7 +476,7 @@ public class FileReadWriter
         }
         catch (IOException e)
         {
-            System.out.println("No Such File");
+            e.getCause();
         }
 
     }
@@ -504,7 +502,7 @@ public class FileReadWriter
         }
         catch (IOException e)
         {
-            System.out.println("No Such File");
+            e.getCause();
         }
 
 
@@ -532,7 +530,7 @@ public class FileReadWriter
         }
         catch (IOException e)
         {
-            System.out.println("No Such File");
+            e.getCause();
         }
 
     }
@@ -553,11 +551,10 @@ public class FileReadWriter
         if(!file.exists())
         {
             file.mkdirs();
-            System.out.println("creating directory");
         }
         else
         {
-            System.out.println("directory in place");
+
         }
 
     }
@@ -634,7 +631,6 @@ public class FileReadWriter
 
         catch (IOException e)
         {
-            System.out.println("File being created");
             try
             {
                 StringBuilder contentBuilder = new StringBuilder();
@@ -664,7 +660,7 @@ public class FileReadWriter
             catch (IOException ioException)
             {
 
-                System.out.println("File could not be created");
+                ioException.getCause();
             }
 
 

@@ -1093,7 +1093,7 @@ class KphPanel extends PluginPanel {
         }
         else
         {
-            System.out.println("File dose not exist");
+
         }
 
     }

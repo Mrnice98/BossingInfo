@@ -1031,7 +1031,6 @@ public class KphPlugin extends Plugin
     {
         if(config.printKphInChat())
         {
-            System.out.println(formatKPH());
             client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","KPH: " + "<col=ff0000>"+ formatKPH()+"</col>","");
             //chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("Kph: " + formatKPH()).build());
 

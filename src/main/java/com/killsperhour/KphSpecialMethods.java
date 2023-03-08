@@ -74,7 +74,6 @@ public class KphSpecialMethods
     {
         if(plugin.message.contains("The Sire has been disorientated temporarily."))
         {
-            System.out.println("sire ran");
             if(plugin.sireStart == null)
             {
                 plugin.sireStart = Instant.now();
@@ -132,7 +131,6 @@ public class KphSpecialMethods
 
     public void barrowsTimeClear()
     {
-        System.out.println("barrows start set to null");
         plugin.barrowsStart = null;
     }
 
@@ -219,17 +217,14 @@ public class KphSpecialMethods
             switch (plugin.lastValidBoss.getName())
             {
                 case "Dagannoth Prime":
-                    System.out.println("prime caler");
                     plugin.primeStart = null;
                     break;
 
                 case "Dagannoth Rex":
-                    System.out.println("rex clearas");
                     plugin.rexStart = null;
                     break;
 
                 case "Dagannoth Supreme":
-                    System.out.println("supreme clears");
                     plugin.supremeStart = null;
                     break;
             }
