@@ -348,10 +348,6 @@ public class KphPlugin extends Plugin
     @Subscribe
     public void onChatMessage(ChatMessage chatMessage)
     {
-        if (chatMessage.getMessage().equals("!Test"))
-        {
-            chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("<col=ff0000>[Bossing Info]<col=707070> Please do one boss kill without Jagex launcher to migrate your info for Jagex Accounts<col=ffff00>").build());
-        }
 
         Player player = client.getLocalPlayer();
 
