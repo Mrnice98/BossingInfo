@@ -57,11 +57,14 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import javax.inject.Inject;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.List;
+
+import static net.runelite.client.RuneLite.RUNELITE_DIR;
 
 
 @PluginDescriptor(
@@ -317,6 +320,17 @@ public class KphPlugin extends Plugin
     @Subscribe
     public void onGameStateChanged(GameStateChanged gameStateChanged)
     {
+        if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
+        {
+            File mainFolder = new File(RUNELITE_DIR,"bossing-info");
+            File file = new File(mainFolder, String.valueOf(client.getAccountHash()));
+            if (client.getUsername() == null && !file.exists())
+            {
+                chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("<col=ff0000>[Bossing Info]<col=707070>Please do one boss kill on old Java client to migrate your info for Jagex Accounts<col=ffff00>").build());
+            }
+
+        }
+
        if(gameStateChanged.getGameState() == GameState.HOPPING || gameStateChanged.getGameState() == GameState.LOGGING_IN)
        {
            attkCount = 0;
@@ -334,6 +348,10 @@ public class KphPlugin extends Plugin
     @Subscribe
     public void onChatMessage(ChatMessage chatMessage)
     {
+        if (chatMessage.getMessage().equals("!Test"))
+        {
+            chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage("<col=ff0000>[Bossing Info]<col=707070> Please do one boss kill without Jagex launcher to migrate your info for Jagex Accounts<col=ffff00>").build());
+        }
 
         Player player = client.getLocalPlayer();
 

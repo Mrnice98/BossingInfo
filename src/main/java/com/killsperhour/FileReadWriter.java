@@ -419,6 +419,22 @@ public class FileReadWriter
         File mainFolder = new File(RUNELITE_DIR,"bossing-info");
         file = new File(mainFolder,client.getUsername());
 
+        if (file.exists() && client.getUsername() != null)
+        {
+            file.renameTo(new File(mainFolder, String.valueOf(client.getAccountHash())));
+            file = new File(mainFolder, String.valueOf(client.getAccountHash()));
+        }
+        else
+        {
+            file = new File(mainFolder, String.valueOf(client.getAccountHash()));
+
+            if(!file.exists())
+            {
+                file.mkdirs();
+            }
+        }
+
+
         filename = filename + ".txt";
         lookupPath = Paths.get(file.getPath(),filename);
         fetchedFile = new File(String.valueOf(lookupPath));
@@ -546,16 +562,26 @@ public class FileReadWriter
 
         //should create a directoy for each login profile
         File mainFolder = new File(RUNELITE_DIR,"bossing-info");
+
+
         file = new File(mainFolder,client.getUsername());
 
-        if(!file.exists())
+        if (file.exists() && client.getUsername() != null)
         {
-            file.mkdirs();
+            file.renameTo(new File(mainFolder, String.valueOf(client.getAccountHash())));
+            file = new File(mainFolder, String.valueOf(client.getAccountHash()));
+
         }
         else
         {
+            file = new File(mainFolder, String.valueOf(client.getAccountHash()));
 
+            if(!file.exists())
+            {
+                file.mkdirs();
+            }
         }
+
 
     }
 
