@@ -46,7 +46,10 @@ enum KphBossInfo
     TOA_NORMAL("TOA Normal",ItemID.TUMEKENS_GUARDIAN,1,-1,1,"Your completed Tombs of Amascut count is:"),
     TOA_EXPERT("TOA Expert",ItemID.AKKHITO,1,-1,1,"Your completed Tombs of Amascut: Expert Mode count is:"),
 
-
+    DUKE_SUCELLUS("Duke Sucellus",ItemID.BARON,1,-1,0,"Your Duke Sucellus kill count is:"),
+    VARDORVIS("Vardorvis",ItemID.BUTCH,1,-1,0,"Your Vardorvis kill count is:"),
+    THE_WHISPERER("The Whisperer",ItemID.WISP,1,-1,0,"Your Whisperer kill count is:"),
+    THE_LEVIATHAN("The Leviathan",ItemID.LILVIATHAN,1,-1,0,"Your Leviathan kill count is:"),
 
     GAUNTLET("Gauntlet",ItemID.YOUNGLLEF,1,-1,1,"Your Gauntlet completion count is:"),
     CORRUPTED_GAUNTLET("Corrupted Gauntlet",ItemID.CORRUPTED_YOUNGLLEF,1,-1,1,"Your Corrupted Gauntlet completion count is:"),
