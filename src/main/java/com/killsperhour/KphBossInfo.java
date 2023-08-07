@@ -40,6 +40,13 @@ enum KphBossInfo
     //display type 1 = yes , 0 = no Phantom Muspah
     PHANTOM_MUSPAH("Phantom Muspah", ItemID.MUPHIN,1,-1,0,"Your Phantom Muspah kill count is:"),
     ZULRAH("Zulrah", ItemID.PET_SNAKELING_12940,1,-1,0,"Your Zulrah kill count is:"),
+
+    DUKE_SUCELLUS("Duke Sucellus",ItemID.BARON,1,-1,0,"Your Duke Sucellus kill count is:"),
+    VARDORVIS("Vardorvis",ItemID.BUTCH,1,-1,0,"Your Vardorvis kill count is:"),
+    THE_WHISPERER("The Whisperer",ItemID.WISP,1,-1,0,"Your Whisperer kill count is:"),
+    THE_LEVIATHAN("The Leviathan",ItemID.LILVIATHAN,1,-1,0,"Your Leviathan kill count is:"),
+
+
     CHAMBERS("Chambers",ItemID.OLMLET,1,-1,1,"Your completed Chambers of Xeric count is:"),
     CM_CHAMBERS("CM Chambers",ItemID.TEKTINY,1,-1,1,"Your completed Chambers of Xeric Challenge Mode count is:"),
 
