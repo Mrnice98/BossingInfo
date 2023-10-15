@@ -254,9 +254,17 @@ public interface KphConfig extends Config
     )
     default boolean printKphInChat() { return false; }
 
+    @ConfigItem(
+        position = 5,
+        keyName = "PoH Ends Session",
+        name = "PoH Ends Session",
+        description = "Automatically ends the current session when the player enters the PoH",
+        section = generalSettings
+    )
+    default boolean endSessionPoH() { return false; }
 
     @ConfigItem(
-            position = 5,
+            position = 6,
             keyName = "Session Timeout",
             name = "Session Timeout",
             description = "Set the session timeout time in minutes (set to 0 for no timeout time)",
@@ -276,7 +284,7 @@ public interface KphConfig extends Config
     }
 
     @ConfigItem(
-            position = 6,
+            position = 7,
             keyName = "KPH Calc Method",
             name = "KPH Calc",
             description = "Allows you to choose the method KPH calculated via",
@@ -291,7 +299,7 @@ public interface KphConfig extends Config
     }
 
     @ConfigItem(
-            position = 7,
+            position = 8,
             keyName = "Loot Display",
             name = "Loot Display",
             description = "Allows you to choose the method KPH calculated via",
@@ -308,7 +316,7 @@ public interface KphConfig extends Config
     }
 
     @ConfigItem(
-            position = 8,
+            position = 9,
             keyName = "Dagannoth Selector",
             name = "Dagannoth Selector",
             description = "Allows you to select which Dagannoth King the plugin will track",

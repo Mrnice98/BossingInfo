@@ -28,10 +28,7 @@ import com.google.inject.Provides;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.*;
-import net.runelite.api.events.ChatMessage;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.GameTick;
-import net.runelite.api.events.HitsplatApplied;
+import net.runelite.api.events.*;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatCommandManager;
 import net.runelite.client.chat.ChatMessageManager;
@@ -143,6 +140,8 @@ public class KphPlugin extends Plugin
     private int pauseTime;
     private int firstKillTime;
     private int attkCount;
+
+    private final int pohPortalId = ObjectID.PORTAL_4525;
 
     private final int[] cmRegions = {13138, 13137, 13139, 13141, 13136, 13145, 13393, 13394, 13140, 13395, 13397};
     private final int[] regGauntletRegion = {7512};
@@ -574,8 +573,19 @@ public class KphPlugin extends Plugin
 
     }
 
-
-
+    @Subscribe
+    public void onGameObjectSpawned(GameObjectSpawned event)
+    {
+        // Retrieve the spawned object
+        final GameObject gameObject = event.getGameObject();
+        // Try and see if the PoH exit portal is found (id PORTAL_4525) if it is that means the player is in a PoH
+        if (gameObject.getId() == pohPortalId)
+        {
+            // The player is in a PoH. Check to see if they want to end session when in PoH
+            if (config.endSessionPoH())
+                sessionEnd();
+        }
+    }
 
     public boolean timesAreNotNull()
     {
