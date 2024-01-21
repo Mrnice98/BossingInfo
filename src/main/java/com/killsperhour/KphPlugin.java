@@ -248,7 +248,7 @@ public class KphPlugin extends Plugin
             case "Side Panel":
                 if(config.showSidePanel())
                 {
-                    buildSidePanel();
+					clientToolbar.addNavigation(navButton);
                 }
                 else
                 {
@@ -627,11 +627,13 @@ public class KphPlugin extends Plugin
 
     private void buildSidePanel()
     {
-        panel = (KphPanel) injector.getInstance(KphPanel.class);
+        panel = injector.getInstance(KphPanel.class);
         panel.sidePanelInitializer();
         icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
         navButton = NavigationButton.builder().tooltip("Bossing Info").icon(icon).priority(config.sidePanelPosition()).panel(panel).build();
-        clientToolbar.addNavigation(navButton);
+		if (config.showSidePanel()){
+			clientToolbar.addNavigation(navButton);
+		}
     }
 
 
@@ -1567,10 +1569,7 @@ public class KphPlugin extends Plugin
         chatCommandManager.registerCommandAsync("!Pause", this::pauseCommand);
         chatCommandManager.registerCommandAsync("!Resume", this::resumeCommand);
 
-        if(config.showSidePanel())
-        {
-            buildSidePanel();
-        }
+		buildSidePanel();
 
         //take idle time into account
         calcMode = 0;
