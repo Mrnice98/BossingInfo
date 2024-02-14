@@ -32,6 +32,8 @@ import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.HitsplatApplied;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatCommandManager;
 import net.runelite.client.chat.ChatMessageManager;
@@ -1591,6 +1593,7 @@ public class KphPlugin extends Plugin
         chatCommandManager.unregisterCommand("!Resume");
 
         clientToolbar.removeNavigation(navButton);
+
         infoBoxManager.removeInfoBox(infobox);
         overlayManager.remove(overlay);
         overlayManager.remove(kphBossGoalsOverlay);

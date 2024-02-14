@@ -109,6 +109,7 @@ enum KphBossInfo
     VENENATIS("Venenatis",ItemID.VENENATIS_SPIDERLING,0,250,-1,"Your Venenatis kill count is:"),
     SPINDEL("Spindel",ItemID.VENENATIS_SPIDERLING_27648,0,250,-1,"Your Spindel kill count is:"),
 
+    SCURRIUS("Scurrius",ItemID.SCURRY,0,250,-1,"Your Scurrius kill count is:"),
 
     BARROWS("Barrows",ItemID.BARROWS_TELEPORT,0,1500,-1,"Your Barrows chest count is:"),
     VERAC_THE_DEFILED("Verac the Defiled",ItemID.BARROWS_TELEPORT,0,1500,-1,"not included"),
