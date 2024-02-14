@@ -334,7 +334,7 @@ class KphPanel extends PluginPanel {
 
     public void updateLootHeaderInfo(int kills, double Kph)
     {
-        FontMetrics fontMetrics = getGraphics().getFontMetrics(FontManager.getRunescapeSmallFont());
+        FontMetrics fontMetrics = getFontMetrics(FontManager.getRunescapeSmallFont());
         totalGpLabel.setText(htmlLabel("Total Gp: ",doubleFormatNumber(fileRW.totalGp)));
         gpPerHourLabel.setText(htmlLabel("GP/Hr: ",doubleFormatNumber(convertToGpPerHour(kills,Kph))));
         gpPerKill.setText(htmlLabel("GP/Kill: ",doubleFormatNumber(convertToGpPerKill(kills))));
@@ -662,7 +662,7 @@ class KphPanel extends PluginPanel {
 
         int length;
 
-        FontMetrics fontMetrics = getGraphics().getFontMetrics(FontManager.getRunescapeSmallFont());
+        FontMetrics fontMetrics = getFontMetrics(FontManager.getRunescapeSmallFont());
         boolean killsDoneIsLonger = (fontMetrics.stringWidth(killsLeftLabel.getText()) < fontMetrics.stringWidth(killsDoneLabel.getText()));
 
         if(killsDoneIsLonger){length = fontMetrics.stringWidth(killsDoneLabel.getText());}
@@ -861,7 +861,7 @@ class KphPanel extends PluginPanel {
 
         }
 
-        FontMetrics fontMetrics = getGraphics().getFontMetrics(FontManager.getRunescapeBoldFont());
+        FontMetrics fontMetrics = getFontMetrics(FontManager.getRunescapeSmallFont());
         int offset = 180 - (fontMetrics.stringWidth(fetchedBossName.getText()) + 10);
                                                         //if i chan
         fetchedIcon.setBorder(new EmptyBorder(0, 0, 0,offset));
@@ -1312,7 +1312,7 @@ class KphPanel extends PluginPanel {
         {
             KphBossInfo kphBossInfo = KphBossInfo.find(bossName);
             AsyncBufferedImage bossSprite = itemManager.getImage(kphBossInfo.getIcon());
-            FontMetrics fontMetrics = getGraphics().getFontMetrics(FontManager.getRunescapeBoldFont());
+            FontMetrics fontMetrics = getFontMetrics(FontManager.getRunescapeSmallFont());
             int offset = 150 - (fontMetrics.stringWidth(plugin.sessionNpc) + 10);
             icon.setBorder(new EmptyBorder(0, 0, 153,offset));
             bossSprite.addTo(picLabel);
