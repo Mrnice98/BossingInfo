@@ -350,6 +350,7 @@ public class KphPlugin extends Plugin
     @Subscribe
     public void onChatMessage(ChatMessage chatMessage)
     {
+
         Player player = client.getLocalPlayer();
 
         if(player == null || delayTicks < 5)
