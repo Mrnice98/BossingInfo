@@ -845,12 +845,18 @@ class KphPanel extends PluginPanel {
         {
             if (searchInput.toLowerCase().equals(bossIconFinder.getName().toLowerCase()))
             {
-                KphBossInfo kphBossInfo = KphBossInfo.find(bossIconFinder.getName());
-                fetchedBossSprite = itemManager.getImage(kphBossInfo.getIcon());
-                fetchedBossName.setText(kphBossInfo.getName());
-                fetchedBossSprite.addTo(fetchedIconLabel);
-                fetchedIconLabel.setVisible(true);
+                KphBossInfo kphBossInfo =  KphBossInfo.find(bossIconFinder.getName());
+                AsyncBufferedImage bossSprite = itemManager.getImage(kphBossInfo.getIcon());
+                ImageIcon imageIcon = new ImageIcon(bossSprite);
 
+                fetchedBossName.setText(kphBossInfo.getName());
+
+                FontMetrics fontMetrics = getFontMetrics(FontManager.getRunescapeBoldFont());
+                int offset = 150 - (fontMetrics.stringWidth(fetchedBossName.getText()));
+                fetchedIconLabel.setBorder(new EmptyBorder(0, 0, 0,offset + 15));
+
+                fetchedIconLabel.setIcon(imageIcon);
+                fetchedIconLabel.setVisible(true);
                 break;
             }
             else
@@ -860,11 +866,6 @@ class KphPanel extends PluginPanel {
             }
 
         }
-
-        FontMetrics fontMetrics = getFontMetrics(FontManager.getRunescapeSmallFont());
-        int offset = 180 - (fontMetrics.stringWidth(fetchedBossName.getText()) + 10);
-                                                        //if i chan
-        fetchedIcon.setBorder(new EmptyBorder(0, 0, 0,offset));
 
         updateLookupInfo();
 
@@ -970,8 +971,6 @@ class KphPanel extends PluginPanel {
         //adds the lables to the respective panel in the order they are added
         fetchedBossName.setFont(FontManager.getRunescapeBoldFont());
         fetchedBossName.setForeground(new Color(219, 219, 219));
-
-
         fetchedIcon.add(fetchedIconLabel);
         fetchedInfoSection.add(fetchedBossName);
         fetchedInfoSection.add(fetchedKillsPerHour);
@@ -982,15 +981,14 @@ class KphPanel extends PluginPanel {
         fetchedInfoSection.add(fetchedTotalTimeVirtual);
         fetchedInfoSection.add(fetchedTotalTimeActual);
         fetchedInfoSection.add(estimatedTimeSpentBossing);
-
-
         fetchedInfoPanel.setBorder(new MatteBorder(0, 0, 1, 0, new Color(37, 125, 141)));
 
         fetchedIcon.setOpaque(false);
         fetchedInfoSection.setOpaque(false);
 
-        fetchedInfoPanel.add(closeAndTrashButtonPanel,"South");
+
         fetchedInfoPanel.add(fetchedIcon,"East");
+        fetchedInfoPanel.add(closeAndTrashButtonPanel,"South");
         fetchedInfoPanel.add(fetchedInfoSection, "West");
 
         return fetchedInfoPanel;
@@ -1298,7 +1296,7 @@ class KphPanel extends PluginPanel {
         sessionInfoSection.add(idleTimeLabel);
         sessionInfoSection.add(sessionTimeLabel);
 
-        bossInfoPanel.add(icon,"East");
+        bossInfoPanel.add(picLabel,"East");
         bossInfoPanel.add(sessionInfoSection, "West");
 
 
@@ -1312,10 +1310,12 @@ class KphPanel extends PluginPanel {
         {
             KphBossInfo kphBossInfo = KphBossInfo.find(bossName);
             AsyncBufferedImage bossSprite = itemManager.getImage(kphBossInfo.getIcon());
-            FontMetrics fontMetrics = getFontMetrics(FontManager.getRunescapeSmallFont());
-            int offset = 150 - (fontMetrics.stringWidth(plugin.sessionNpc) + 10);
-            icon.setBorder(new EmptyBorder(0, 0, 153,offset));
-            bossSprite.addTo(picLabel);
+            ImageIcon imageIcon = new ImageIcon(bossSprite);
+
+            FontMetrics fontMetrics = getFontMetrics(FontManager.getRunescapeBoldFont());
+            int offset = 150 - (fontMetrics.stringWidth(plugin.sessionNpc) - 15);
+            picLabel.setBorder(new EmptyBorder(0, 0, 153,offset ));
+            picLabel.setIcon(imageIcon);
         }
     }
 

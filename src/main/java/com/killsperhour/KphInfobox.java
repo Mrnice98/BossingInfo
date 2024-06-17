@@ -83,7 +83,7 @@ class KphInfobox extends InfoBox
 		toolTip.append("</br>KPH: ");
 		toolTip.append(plugin.formatKPH());
 
-		if(config.averageKillTime())
+		if(config.killsThisSession())
 		{
 			toolTip.append("</br>Kills: ");
 			toolTip.append(plugin.killsThisSession);

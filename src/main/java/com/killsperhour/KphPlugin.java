@@ -351,6 +351,16 @@ public class KphPlugin extends Plugin
     public void onChatMessage(ChatMessage chatMessage)
     {
 
+        if (chatMessage.getMessage().equals("!"))
+        {
+
+            panel.setBossIcon("K'ril Tsutsaroth");
+            sessionNpc = "K'ril Tsutsaroth";
+            panel.setSessionInfo();
+
+        }
+
+
         Player player = client.getLocalPlayer();
 
         if(player == null || delayTicks < 5)
