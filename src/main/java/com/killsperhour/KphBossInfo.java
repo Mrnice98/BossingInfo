@@ -62,6 +62,7 @@ enum KphBossInfo
     THEATER_OF_BLOOD_HM("Theatre of Blood HM",ItemID.LIL_SOT,1,-1,1,"Your completed Theatre of Blood: Hard Mode count is:"),
 
     VORKATH("Vorkath",ItemID.VORKI,1,-1,0,"Your Vorkath kill count is:"),
+    THE_HUEYCOATL("The Hueycoatl", ItemID.THE_HUEYCOATL,1,-1,0,"Your Hueycoatl kill count is:"),
     HYDRA("Alchemical Hydra",ItemID.IKKLE_HYDRA_22748,1,-1,0,"Your Alchemical Hydra kill count is:"),
     GROTESQUE_GUARDIANS("Grotesque Guardians",ItemID.NOON,1,-1,1,"Your Grotesque Guardians kill count is:"),
 
@@ -125,6 +126,7 @@ enum KphBossInfo
     DAGANNOTH_REX("Dagannoth Rex",ItemID.PET_DAGANNOTH_REX,0,15,-1,"not included"),
     DAGANNOTH_SUPREME("Dagannoth Supreme",ItemID.PET_DAGANNOTH_SUPREME,0,15,-1,"not included"),
     DAGANNOTH_KINGS("Dagannoth Kings",ItemID.DAGANNOTH,0,15,-1,"not included");
+
 
 
     private final int icon;
@@ -277,6 +279,7 @@ enum KphBossInfo
 
 
         bossByWords.put("hydra","Alchemical Hydra");
+        bossByWords.put("huey", "The Hueycoatl");
     }
 
 
