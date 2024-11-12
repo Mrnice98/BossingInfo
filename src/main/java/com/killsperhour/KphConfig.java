@@ -83,8 +83,27 @@ public interface KphConfig extends Config
     )
     default boolean renderInfobox() { return true; }
 
+    enum InfoBoxContent
+    {
+        KPH,
+        KILLS_THIS_SESSION,
+        SESSION_TIME,
+        AVG_KILL,
+        FASTEST_KILL,
+        IDLE_TIME,
+    }
+
     @ConfigItem(
             position = 2,
+            keyName = "Infobox Content",
+            name = "Infobox Content",
+            description = "What metric the infobox shows",
+            section = displaySection
+    )
+    default InfoBoxContent infoBoxContent() { return InfoBoxContent.KPH; }
+
+    @ConfigItem(
+            position = 3,
             keyName = "Average Kill Time",
             name = "Average Kill Time",
             description = "Display Average Kill Time",
@@ -93,7 +112,7 @@ public interface KphConfig extends Config
     default boolean averageKillTime() { return true; }
 
     @ConfigItem(
-            position = 3,
+            position = 4,
             keyName = "Fastest Kill",
             name = "Fastest Kill",
             description = "Display Fastest Kill",
@@ -102,7 +121,7 @@ public interface KphConfig extends Config
     default boolean fastestKill() { return true; }
 
     @ConfigItem(
-            position = 3,
+            position = 5,
             keyName = "Kills This Session",
             name = "Kills This Session",
             description = "Display Kills This Session",
@@ -112,7 +131,7 @@ public interface KphConfig extends Config
 
 
     @ConfigItem(
-            position = 4,
+            position = 6,
             keyName = "Display Session Time",
             name = "Session Time",
             description = "Displays a running count of the session time ",
@@ -121,7 +140,7 @@ public interface KphConfig extends Config
     default boolean displayTotalTime() { return true; }
 
     @ConfigItem(
-            position = 5,
+            position = 7,
             keyName = "Display Idle Time",
             name = "Idle Time",
             description = "Toggles the display for Idle time, Only works if 'Account for Idle' is enabled ",

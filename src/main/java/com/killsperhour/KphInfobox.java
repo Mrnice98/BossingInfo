@@ -64,7 +64,27 @@ class KphInfobox extends InfoBox
 	@Override
 	public String getText()
 	{
-		return plugin.formatKPH();
+		switch (config.infoBoxContent())
+		{
+			case SESSION_TIME:
+				return plugin.timeConverter(plugin.totalSessionTime);
+
+			case KILLS_THIS_SESSION:
+				return String.valueOf(plugin.killsThisSession);
+
+			case AVG_KILL:
+				return plugin.avgKillTimeConverter();
+
+			case FASTEST_KILL:
+				return plugin.timeConverter(plugin.fastestKill);
+
+			case IDLE_TIME:
+				return plugin.timeConverter(plugin.timeSpentIdle);
+
+			default:
+				return plugin.formatKPH();
+		}
+
 	}
 
 	@Override

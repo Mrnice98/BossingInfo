@@ -37,9 +37,12 @@ enum KphBossInfo
 {
 
 
-    //display type 1 = yes , 0 = no Phantom Muspah
+    //display type 1 = yes , 0 = no
     PHANTOM_MUSPAH("Phantom Muspah", ItemID.MUPHIN,1,-1,0,"Your Phantom Muspah kill count is:"),
     ZULRAH("Zulrah", ItemID.PET_SNAKELING_12940,1,-1,0,"Your Zulrah kill count is:"),
+    AMOXLIATL("Amoxliatl",ItemID.MOXI,1,-1,0,"Your Amoxliatl kill count is:"),
+    HUEYCOATL("Hueycoatl",ItemID.HUBERTE,1,-1,0,"Your Hueycoatl kill count is:"),
+    ARAXXOR("Araxxor",ItemID.NID,1,-1,0,"Your Araxxor kill count is:"),
 
     DUKE_SUCELLUS("Duke Sucellus",ItemID.BARON,1,-1,0,"Your Duke Sucellus kill count is:"),
     VARDORVIS("Vardorvis",ItemID.BUTCH,1,-1,0,"Your Vardorvis kill count is:"),
@@ -53,6 +56,8 @@ enum KphBossInfo
     TOA_NORMAL("TOA Normal",ItemID.TUMEKENS_GUARDIAN,1,-1,1,"Your completed Tombs of Amascut count is:"),
     TOA_EXPERT("TOA Expert",ItemID.AKKHITO,1,-1,1,"Your completed Tombs of Amascut: Expert Mode count is:"),
 
+
+    COLOSSEUM("Colosseum",ItemID.SMOL_HEREDIT,1,-1,1,"Your Sol Heredit kill count is:"),
 
 
     GAUNTLET("Gauntlet",ItemID.YOUNGLLEF,1,-1,1,"Your Gauntlet completion count is:"),
@@ -177,6 +182,7 @@ enum KphBossInfo
         timeMessages.add("Theatre of Blood total completion time: ");
         timeMessages.add("Tombs of Amascut: Expert Mode total completion time:");
         timeMessages.add("Tombs of Amascut total completion time:");//normal mode
+        timeMessages.add("Colosseum duration:");
     }
 
     static
@@ -200,14 +206,17 @@ enum KphBossInfo
         //GG's ByWords
         bossByWords.put("garg boss","Grotesque Guardians");
 
-
         bossByWords.put("Dusk","Grotesque Guardians");
-
 
         bossByWords.put("dawn","Grotesque Guardians");
         bossByWords.put("ggs","Grotesque Guardians");
 
+        bossByWords.put("Fortis Colosseum","Colosseum");
+        bossByWords.put("Colo","Colosseum");
 
+        bossByWords.put("huey","Hueycoatl");
+
+        bossByWords.put("amox","Amoxliatl");
 
 
         bossByWords.put("zuk","TzKal-Zuk");
