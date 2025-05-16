@@ -43,6 +43,9 @@ enum KphBossInfo
     AMOXLIATL("Amoxliatl",ItemID.MOXI,1,-1,0,"Your Amoxliatl kill count is:"),
     HUEYCOATL("Hueycoatl",ItemID.HUBERTE,1,-1,0,"Your Hueycoatl kill count is:"),
     ARAXXOR("Araxxor",ItemID.NID,1,-1,0,"Your Araxxor kill count is:"),
+    ROYAL_TITANS("Royal Titans",ItemID.BRAN,1,-1,0,"Your Royal Titans kill count is:"),
+    YAMA("Yama",ItemID.YAMI,1,-1,0,"Your Yama success count is:"),
+
 
     DUKE_SUCELLUS("Duke Sucellus",ItemID.BARON,1,-1,0,"Your Duke Sucellus kill count is:"),
     VARDORVIS("Vardorvis",ItemID.BUTCH,1,-1,0,"Your Vardorvis kill count is:"),
@@ -193,6 +196,8 @@ enum KphBossInfo
         bossByWordsLoot.put("Chambers of Xeric","Chambers");
         bossByWordsLoot.put("The Gauntlet","Gauntlet");
         bossByWordsLoot.put("The Nightmare","Nightmare");
+        bossByWordsLoot.put("Branda the Fire Queen","Royal Titans");
+        bossByWordsLoot.put("Eldric the Ice King","Royal Titans");
     }
 
     static
