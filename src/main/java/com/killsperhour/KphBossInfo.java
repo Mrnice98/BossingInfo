@@ -45,7 +45,7 @@ enum KphBossInfo
     ARAXXOR("Araxxor",ItemID.NID,1,-1,0,"Your Araxxor kill count is:"),
     ROYAL_TITANS("Royal Titans",ItemID.BRAN,1,-1,0,"Your Royal Titans kill count is:"),
     YAMA("Yama",ItemID.YAMI,1,-1,0,"Your Yama success count is:"),
-    SHELLBANE_GRYPHON("Shellbane gryphon",ItemID.GULLIVER,1,-1,0,"Your shellbane gryphon kill count is:"),
+    SHELLBANE_GRYPHON("Shellbane gryphon",ItemID.GULLIVER,1,-1,0,"Your Shellbane Gryphon kill count is:"),
 
 
 
