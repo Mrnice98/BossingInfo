@@ -192,19 +192,6 @@ enum KphBossInfo
 
     static
     {
-        bossByWordsLoot.putAll(bossByWords);
-        bossByWordsLoot.put("Thermonuclear smoke devil","Thermy");
-        bossByWordsLoot.put("Vet'ion Reborn","Vet'ion");
-        bossByWordsLoot.put("Chambers of Xeric","Chambers");
-        bossByWordsLoot.put("The Gauntlet","Gauntlet");
-        bossByWordsLoot.put("The Nightmare","Nightmare");
-        bossByWordsLoot.put("Branda the Fire Queen","Royal Titans");
-        bossByWordsLoot.put("Eldric the Ice King","Royal Titans");
-    }
-
-    static
-    {
-
         //used for boss name check as-well as when searching for a record
 
         bossByWords.put("c gauntlet","Corrupted Gauntlet");
@@ -299,7 +286,15 @@ enum KphBossInfo
         bossByWords.put("hydra","Alchemical Hydra");
     }
 
-
+    static
+    {
+        bossByWordsLoot.putAll(bossByWords);
+        bossByWordsLoot.put("Chambers of Xeric","Chambers");
+        bossByWordsLoot.put("The Gauntlet","Gauntlet");
+        bossByWordsLoot.put("The Nightmare","Nightmare");
+        bossByWordsLoot.put("Branda the Fire Queen","Royal Titans");
+        bossByWordsLoot.put("Eldric the Ice King","Royal Titans");
+    }
 
     public String getName()
     {
