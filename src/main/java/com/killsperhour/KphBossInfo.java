@@ -47,8 +47,6 @@ enum KphBossInfo
     YAMA("Yama",ItemID.YAMI,1,-1,0,"Your Yama success count is:"),
     SHELLBANE_GRYPHON("Shellbane gryphon",ItemID.GULLIVER,1,-1,0,"Your shellbane gryphon kill count is:"),
 
-
-
     DUKE_SUCELLUS("Duke Sucellus",ItemID.BARON,1,-1,0,"Your Duke Sucellus kill count is:"),
     VARDORVIS("Vardorvis",ItemID.BUTCH,1,-1,0,"Your Vardorvis kill count is:"),
     THE_WHISPERER("The Whisperer",ItemID.WISP,1,-1,0,"Your Whisperer kill count is:"),
@@ -84,6 +82,7 @@ enum KphBossInfo
     //times are in ticks, 120 = 1.2min , 500 = 5min, 200 = 2min, 300 = 3min ect... 100ticks = 1min
 
     //non-display below
+    MAGGOT_KING("Maggot King", 33642, 0, -1, 0, "Your Maggot King kill count is:"),
     GIANT_MOLE("Giant Mole",ItemID.BABY_MOLE,0,220,-1,"Your Giant Mole kill count is:"),
     SARACHNIS("Sarachnis",ItemID.SRARACHA,0,220,-1,"Your Sarachnis kill count is:"),
     ABYSSAL_SIRE("Abyssal Sire",ItemID.ABYSSAL_ORPHAN,0,300,-1,"Your Abyssal Sire kill count is:"),
@@ -272,6 +271,10 @@ enum KphBossInfo
         bossByWords.put("phantom","Phantom Muspah");
         bossByWords.put("muspah","Phantom Muspah");
         bossByWords.put("grumbler","Phantom Muspah");
+
+        bossByWords.put("maggot","Maggot King");
+        bossByWords.put("Maggot king","Maggot King");
+        bossByWords.put("Maggot King","Maggot King");
 
         //CM ByWords
         bossByWords.put("cm","CM Chambers");
