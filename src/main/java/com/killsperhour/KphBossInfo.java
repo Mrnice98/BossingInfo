@@ -48,7 +48,7 @@ enum KphBossInfo
     SHELLBANE_GRYPHON("Shellbane Gryphon",ItemID.GULLIVER,1,-1,0,"Your Shellbane Gryphon kill count is:"),
     MAGGOT_KING("Maggot King", ItemID.MAGGOT_MARQUESS, 1, -1, 0, "Your Maggot King kill count is:"),
     BRUTUS("Brutus", ItemID.BEEF, 1, -1, 0, "Your Brutus kill count is:"),
-
+    MAD_ANGEL("Mad Angel", ItemID.AGGY, 1, -1, 0,"Your Mad Angel kill count is:"),
 
     DUKE_SUCELLUS("Duke Sucellus",ItemID.BARON,1,-1,0,"Your Duke Sucellus kill count is:"),
     VARDORVIS("Vardorvis",ItemID.BUTCH,1,-1,0,"Your Vardorvis kill count is:"),
