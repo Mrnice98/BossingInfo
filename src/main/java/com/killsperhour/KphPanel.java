@@ -265,7 +265,7 @@ class KphPanel extends PluginPanel {
         topInfo.add(hideItemButton,"East");
 
 
-        killsTrackedLabel.setBorder(new EmptyBorder(0,48,0,0));
+        killsTrackedLabel.setBorder(new EmptyBorder(0,43,0,0));
 
         topInfo.add(killsTrackedLabel,"Center");
         bottomInfo.add(gpPerHourLabel);
@@ -340,7 +340,7 @@ class KphPanel extends PluginPanel {
         gpPerKill.setText(htmlLabel("GP/Kill: ",doubleFormatNumber(convertToGpPerKill(kills))));
         if (fileRW.totalGp == 0) { kills = 0; }
         killsTrackedLabel.setText(htmlLabel("Kills: ", String.valueOf(kills)));
-        killsTrackedLabel.setBorder(new EmptyBorder(0,  535 - fontMetrics.stringWidth(gpPerKill.getText())  ,0,0));
+        killsTrackedLabel.setBorder(new EmptyBorder(0,  530 - fontMetrics.stringWidth(gpPerKill.getText())  ,0,0));
     }
 
 

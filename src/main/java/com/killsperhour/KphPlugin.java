@@ -803,7 +803,7 @@ public class KphPlugin extends Plugin
 
         //Special case bosses
 
-        //Daggonoth kings
+        //Dagannoth kings
         if((message.contains(rexMessage) || message.contains(primeMessage) || message.contains(supremeMessage)) && config.dksSelector() == KphConfig.DksSelector.Kings
         || (message.contains(rexMessage) && config.dksSelector() == KphConfig.DksSelector.Rex)
         || (message.contains(primeMessage) && config.dksSelector() == KphConfig.DksSelector.Prime)
@@ -825,6 +825,8 @@ public class KphPlugin extends Plugin
             noDisplayKillTimeGetter();
             sessionChecker();
             canRun = true;
+            calcKillsPerHour();
+            printCurrentKph();
         }
 
     }

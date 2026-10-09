@@ -48,7 +48,7 @@ enum KphBossInfo
     SHELLBANE_GRYPHON("Shellbane Gryphon",ItemID.GULLIVER,1,-1,0,"Your Shellbane Gryphon kill count is:"),
     MAGGOT_KING("Maggot King", ItemID.MAGGOT_MARQUESS, 1, -1, 0, "Your Maggot King kill count is:"),
     BRUTUS("Brutus", ItemID.BEEF, 1, -1, 0, "Your Brutus kill count is:"),
-
+    MAD_ANGEL("Mad Angel", ItemID.AGGY, 1, -1, 0, "Your Mad Angel kill count is:"),
 
     DUKE_SUCELLUS("Duke Sucellus",ItemID.BARON,1,-1,0,"Your Duke Sucellus kill count is:"),
     VARDORVIS("Vardorvis",ItemID.BUTCH,1,-1,0,"Your Vardorvis kill count is:"),
@@ -287,9 +287,8 @@ enum KphBossInfo
 
         bossByWords.put("hydra","Alchemical Hydra");
 
-        bossByWords.put("maggot","Maggot King");
-        bossByWords.put("Maggot king","Maggot King");
-        bossByWords.put("Maggot King","Maggot King");
+        bossByWords.put("Maggot","Maggot King");
+        bossByWords.put("Marquess","Maggot King");
 
         bossByWords.put("Gull","Shellbane Gryphon");
         bossByWords.put("Gryphon","Shellbane Gryphon");
@@ -297,6 +296,10 @@ enum KphBossInfo
 
         bossByWords.put("Cow","Brutus");
         bossByWords.put("Cow Boss","Brutus");
+
+        bossByWords.put("Aggy", "Mad Angel");
+        bossByWords.put("Angel", "Mad Angel");
+
     }
 
 
@@ -310,6 +313,7 @@ enum KphBossInfo
         bossByWordsLoot.put("The Nightmare","Nightmare");
         bossByWordsLoot.put("Branda the Fire Queen","Royal Titans");
         bossByWordsLoot.put("Eldric the Ice King","Royal Titans");
+        bossByWordsLoot.put("Shellbane gryphon","Shellbane Gryphon");
     }
 
 
