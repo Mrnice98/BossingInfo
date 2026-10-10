@@ -1452,17 +1452,14 @@ class KphPanel extends PluginPanel {
 
 
 
-    //uses the default browser on the machine to open the attached link (my discord for support & my github)
     public void discordLink()
     {
-        try { Desktop.getDesktop().browse(new URI("https://discord.gg/ATXSsbbXQV")); }
-        catch (IOException | URISyntaxException e1) { }
+        LinkBrowser.browse("https://discord.gg/ATXSsbbXQV");
     }
 
     public void githubLink()
     {
-        try { Desktop.getDesktop().browse(new URI("https://github.com/Mrnice98/KillsPerHour")); }
-        catch (IOException | URISyntaxException e1) { }
+        LinkBrowser.browse("https://github.com/Mrnice98/KillsPerHour");
     }
 
 
